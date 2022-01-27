@@ -7,7 +7,7 @@ resources:
 # Kubeflow Roles
 - ../common/kubeflow-roles/base
 # Service Mesh
-- ../servicemesh
+- servicemesh
 # Kubeflow Istio Resources
 - ../common/istio-1-9-0/kubeflow-istio-resources/base
 
@@ -45,7 +45,7 @@ resources:
 #- ../apps/xgboost-job/upstream/overlays/kubeflow
 
 # Name Space Configuration for user onboarding
-- ../onboarding 
+- onboarding 
 
 configMapGenerator:
   - name: global-parameters
