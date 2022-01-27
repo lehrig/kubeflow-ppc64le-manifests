@@ -1,0 +1,8 @@
+kind: OAuthClient
+apiVersion: oauth.openshift.io/v1
+metadata:
+ name: kubeflow-istio 
+secret: SECRET 
+redirectURIs:
+ - https://kubeflow.$(clusterDomain) 
+grantMethod: auto

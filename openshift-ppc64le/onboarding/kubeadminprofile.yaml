@@ -1,0 +1,10 @@
+apiVersion: kubeflow.org/v1beta1
+kind: Profile
+metadata:
+  name: kubeadmin-cluster-local   # replace with the name of profile you want, this will be user's namespace name
+spec:
+  owner:
+    kind: User
+    name: kube:admin@cluster.local   # replace with the email of the user
+
+  resourceQuotaSpec: {}    # resource quota can be set optionally

@@ -1,0 +1,80 @@
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: UserConfig
+metadata:
+  name: kubeflow-user
+spec:
+  providerName: Local Password
+  #name: {{ index (lookup "user.openshift.io/v1" "Identity" "" (index .Identities 0)).Extra "email" }}
+  templates:
+  - objectTemplate: |
+      apiVersion: kubeflow.org/v1beta1
+      kind: Profile
+      metadata:
+        name: {{ .Name | lower | replace "." "-" | replace "@" "-" | trimAll "."}}
+      spec:
+        owner:
+          kind: User
+          name: {{ .Name }}
+        resourceQuotaSpec:
+          hard:
+            cpu: "8"
+            memory: 16Gi
+            "requests.nvidia.com/gpu": "10"
+            persistentvolumeclaims: "10"
+            requests.storage: "200Gi"
+  - objectTemplate: | 
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: RoleBinding
+      metadata:
+        name: editor-for-{{ .Name | lower | replace "." "-" | replace "@" "-" | trimAll "."}}
+        namespace: kubeflow
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: kubeflow-edit
+      subjects:
+      - kind: User
+        apiGroup: rbac.authorization.k8s.io
+        name: {{ .Name }}
+  - objectTemplate: |
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: RoleBinding
+      metadata:
+        name: system:openshift:scc:privileged
+        namespace: {{ .Name | lower | replace "." "-" | replace "@" "-" | trimAll "." }}
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: system:openshift:scc:privileged
+      subjects:
+      - kind: ServiceAccount
+        name: default-editor
+        namespace: {{ .Name | lower | replace "." "-" | replace "@" "-" | trimAll "." }}
+  - objectTemplate: |
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: RoleBinding
+      metadata:
+        name: kubeflow-editor
+        namespace: {{ .Name | lower | replace "." "-" | replace "@" "-" | trimAll "." }}
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: kubeflow-edit
+      subjects:
+      - kind: User
+        apiGroup: rbac.authorization.k8s.io
+        name: {{ .Name }} 
+  - objectTemplate: | 
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: RoleBinding
+      metadata:
+        name: {{ .Name | lower | replace "." "-" | replace "@" "-" | trimAll "." }}-sm-view
+        namespace: istio-system
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: view
+      subjects:
+      - kind: User
+        apiGroup: rbac.authorization.k8s.io
+        name: {{ .Name }}                   

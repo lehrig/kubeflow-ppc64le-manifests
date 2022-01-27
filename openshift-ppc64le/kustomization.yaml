@@ -1,0 +1,170 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+# Kubeflow namespace
+- ../common/kubeflow-namespace/base
+# Kubeflow Roles
+- ../common/kubeflow-roles/base
+# Service Mesh
+- ../servicemesh
+# Kubeflow Istio Resources
+- ../common/istio-1-9-0/kubeflow-istio-resources/base
+
+# Kubeflow Pipelines
+- ../apps/pipeline/upstream/env/platform-agnostic-multi-user-pns
+# KFServing
+#- ../apps/kfserving/upstream/overlays/kubeflow
+# Katib
+#- ../apps/katib/upstream/installs/katib-with-kubeflow
+# Central Dashboard
+- ../apps/centraldashboard/upstream/overlays/istio
+# Admission Webhook
+- ../apps/admission-webhook/upstream/overlays/cert-manager
+# Notebook Controller
+- ../apps/jupyter/jupyter-web-app/upstream/overlays/istio
+# Jupyter Web App
+- ../apps/jupyter/notebook-controller/upstream/overlays/kubeflow
+# Profiles + KFAM
+- ../apps/profiles/upstream/overlays/kubeflow
+# Volumes Web App
+- ../apps/volumes-web-app/upstream/overlays/istio
+# Tensorboards Web App
+-  ../apps/tensorboard/tensorboard-controller/upstream/overlays/kubeflow
+# Tensorboard Controller
+-  ../apps/tensorboard/tensorboards-web-app/upstream/overlays/istio
+# TFJob Operator
+- ../apps/tf-training/upstream/overlays/kubeflow
+# Pytorch Operator
+#- ../apps/pytorch-job/upstream/overlays/kubeflow
+# MPI Operator
+#- ../apps/mpi-job/upstream/overlays/kubeflow
+# MXNet Operator
+#- ../apps/mxnet-job/upstream/overlays/kubeflow
+# XGBoost Operator
+#- ../apps/xgboost-job/upstream/overlays/kubeflow
+
+# Name Space Configuration for user onboarding
+- ../onboarding 
+
+configMapGenerator:
+  - name: global-parameters
+    env: global-params.env
+  - name: pipeline-install-config
+    env: pipeline-params.env
+    behavior: merge
+  - name: jupyter-web-app-config
+    namespace: kubeflow
+    behavior: merge
+    files:
+    - spawner_ui_config.yaml
+  - name: kubeflow-pipelines-profile-controller-code
+    namespace: kubeflow
+    behavior: replace
+    files:
+    - sync.py
+
+vars:
+- name: clusterDomain
+  objref:
+    kind: ConfigMap
+    name: global-parameters
+    apiVersion: v1
+  fieldref:
+    fieldpath: data.clusterDomain
+
+configurations:
+- global-params.yaml
+
+patchesStrategicMerge:
+- set_memory.yaml
+- workflow-controller-deployment-patch.yaml
+
+images:
+- name: gcr.io/ml-pipeline/workflow-controller
+  newName: quay.io/ibm/kubeflow-workflow-controller-ppc64le
+  newTag: v2.12.9
+- name: gcr.io/ml-pipeline/argoexec
+  newName: quay.io/ibm/kubeflow-argoexec-ppc64le
+  newTag: v2.12.9
+- name: gcr.io/tfx-oss-public/ml_metadata_store_server
+  newName: quay.io/ibm/kubeflow-ml_metadata_store_server-ppc64le
+  newTag: 0.25.1
+- name: gcr.io/ml-pipeline/metadata-envoy
+  newName: quay.io/ibm/kubeflow-metadata-envoy-ppc64le
+  newTag: 1.5.0
+- name: gcr.io/ml-pipeline/minio
+  newName: quay.io/ibm/kubeflow-minio-ppc64le
+  newTag: RELEASE.2019-04-09T01-22-30Z.1
+- name: gcr.io/ml-pipeline/mysql
+  newName: quay.io/ibm/kubeflow-mariadb-ppc64le
+  newTag: 10.2.19
+- name: python
+  newName: registry.access.redhat.com/ubi8/python-38
+  newTag: 1-75
+- name: metacontroller/metacontroller:v0.3.0
+  newName: quay.io/ibm/kubeflow-metacontroller-ppc64le
+  newTag: v0.3.0
+- name: gcr.io/ml-pipeline/api-server
+  newName: quay.io/ibm/kubeflow-api-server-ppc64le
+  newTag: 1.5.0
+- name: gcr.io/ml-pipeline/persistenceagent
+  newName: quay.io/ibm/kubeflow-persistenceagent-ppc64le
+  newTag: 1.5.0
+- name: gcr.io/ml-pipeline/scheduledworkflow
+  newName: quay.io/ibm/kubeflow-scheduledworkflow-ppc64le
+  newTag: 1.5.0
+- name: gcr.io/ml-pipeline/frontend
+  newName: quay.io/ibm/kubeflow-frontend-ppc64le
+  newTag: 1.5.0
+- name: gcr.io/ml-pipeline/viewer-crd-controller
+  newName: quay.io/ibm/kubeflow-viewer-crd-controller-ppc64le
+  newTag: 1.5.0
+- name: gcr.io/ml-pipeline/visualization-server
+  newName: quay.io/ibm/kubeflow-visualization-server-ppc64le
+  newTag: 1.5.0
+- name: gcr.io/ml-pipeline/metadata-writer
+  newName: quay.io/ibm/kubeflow-metadata-writer-ppc64le
+  newTag: 1.5.0
+- name: gcr.io/ml-pipeline/cache-deployer
+  newName: quay.io/ibm/kubeflow-cache-deployer-ppc64le
+  newTag: 1.5.0
+- name: gcr.io/ml-pipeline/cache-server
+  newName: quay.io/ibm/kubeflow-cache-server-ppc64le
+  newTag: 1.5.0
+- name: public.ecr.aws/j1r0q0g6/notebooks/access-management
+  newName: quay.io/ibm/kubeflow-access-management-ppc64le
+  newTag: v1.3.0-rc.1
+- name: public.ecr.aws/j1r0q0g6/notebooks/profile-controller 
+  newName: quay.io/ibm/kubeflow-profile-controller-ppc64le
+  newTag: v1.3.0-rc.1
+- name: public.ecr.aws/j1r0q0g6/notebooks/central-dashboard
+  newName: quay.io/ibm/kubeflow-central-dashboard-ppc64le
+  newTag: v1.3.0-rc.1
+- name: public.ecr.aws/j1r0q0g6/notebooks/admission-webhook
+  newName: quay.io/ibm/kubeflow-admission-webhook-ppc64le
+  newTag: v1.3.0-rc.1
+- name: public.ecr.aws/j1r0q0g6/notebooks/jupyter-web-app
+  newName: quay.io/ibm/kubeflow-jupyter-web-app-ppc64le
+  newTag: v1.3.0-rc.1
+- name: quay.io/kubeflow/tf-notebook-image
+  newName: quay.io/ibm/kubeflow-notebook-image-ppc64le
+  newTag: tensorflow-1.15.4-cpu-py3.6
+- name: public.ecr.aws/j1r0q0g6/notebooks/notebook-controller
+  newName: quay.io/ibm/kubeflow-notebook-controller-ppc64le
+  newTag: v1.3.0-rc.1
+- name: public.ecr.aws/j1r0q0g6/notebooks/tensorboards-web-app
+  newName: quay.io/ibm/kubeflow-tensorboards-web-app-ppc64le
+  newTag: v1.3.0-rc.1
+- name: public.ecr.aws/j1r0q0g6/notebooks/tensorboard-controller
+  newName: quay.io/ibm/kubeflow-tensorboard-controller-ppc64le
+  newTag: v1.3.0-rc.1
+- name: gcr.io/kubebuilder/kube-rbac-proxy
+  newName: quay.io/brancz/kube-rbac-proxy
+  newTag: v0.6.0-ppc64le
+- name: public.ecr.aws/j1r0q0g6/training/tf-operator
+  newName: quay.io/ibm/kubeflow-tf-operator-ppc64le
+  newTag: cd2fc1ff397b1f349f68524f4abd5013a32e3033
+- name: public.ecr.aws/j1r0q0g6/notebooks/volumes-web-app
+  newName: quay.io/ibm/kubeflow-volumes-web-app-ppc64le
+  newTag: v1.3.0-rc.1

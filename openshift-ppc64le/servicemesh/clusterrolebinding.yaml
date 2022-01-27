@@ -1,0 +1,12 @@
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: istio-ingress-kubeflow-oauth
+subjects:
+- kind: ServiceAccount
+  namespace: istio-system
+  name: kubeflow-service-account
+roleRef:
+  kind: ClusterRole
+  name: grafana
+  apiGroup: rbac.authorization.k8s.io

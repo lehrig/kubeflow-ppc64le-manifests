@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: istio-system
+resources:
+- namespace.yaml
+- configmap.yaml
+- clusterrolebinding.yaml
+- controlplane.yaml
+- route.yaml
+- envoyfilters.yaml
+- oauth-client.yaml 
+- servicemeshmemberroll.yaml
+- servicemeshmember.yaml
+- allow-apiserver-webhooks.yaml
+- htpasswd-oauth.yaml
+
+commonLabels:
+  app.kubernetes.io/part-of: kubeflow
+
+secretGenerator:
+- name: oauth2-proxy
+  envs:
+  - ./oauth2-proxy.env
+  type: Opaque
+
+configurations:
+- transformers.yaml

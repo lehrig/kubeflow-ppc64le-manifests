@@ -1,0 +1,14 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: secure-kubeflow
+spec:
+  host: kubeflow.$(clusterDomain)
+  port:
+    targetPort: 9443
+  tls:
+    insecureEdgeTerminationPolicy: Redirect
+    termination: reencrypt
+  to:
+    kind: Service
+    name: kubeflow 

@@ -1,0 +1,136 @@
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: NamespaceConfig
+metadata:
+  name: kubeflow-namespace
+spec:
+  labelSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: kubeflow-profile  
+  templates:
+  - objectTemplate: |
+      apiVersion: maistra.io/v1
+      kind: ServiceMeshMember
+      metadata:
+        name: default
+        namespace: {{ .Name | lower | replace "." "-" | replace "@" "-" | trimAll "." }}
+      spec:
+        controlPlaneRef:
+          namespace: istio-system
+          name: kubeflow
+  - objectTemplate: | 
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: RoleBinding
+      metadata:
+        name: default-editor-nonroot
+        namespace: {{ .Name | lower | replace "." "-" | replace "@" "-" | trimAll "." }}
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: system:openshift:scc:nonroot
+      subjects:
+      - kind: ServiceAccount
+        name: default-editor
+  - objectTemplate: | 
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: RoleBinding
+      metadata:
+        name: default-nonroot
+        namespace: {{ .Name | lower | replace "." "-" | replace "@" "-" | trimAll "." }}
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: system:openshift:scc:nonroot
+      subjects:
+      - kind: ServiceAccount
+        name: default        
+  - objectTemplate: | 
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: RoleBinding
+      metadata:
+        name: default-edit
+        namespace: {{ .Name | lower | replace "." "-" | replace "@" "-" | trimAll "." }}
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: edit
+      subjects:
+      - kind: ServiceAccount
+        name: default        
+  # - objectTemplate: | 
+  #     apiVersion: redhatcop.redhat.io/v1alpha1
+  #     kind: ResourceLocker
+  #     metadata:
+  #       name: sts-annotation
+  #       namespace: {{ .Name }}
+  #     spec:
+  #       serviceAccountRef:
+  #         name: default
+  #       patches:
+  #       - targetObjectRef:
+  #           apiVersion: v1
+  #           kind: ServiceAccount
+  #           name: default-editor
+  #           namespace: {{ .Name }}
+  #         patchTemplate: |
+  #           metadata:
+  #             annotations:
+  #                eks.amazonaws.com/audience: "sts.amazonaws.com"
+  #                eks.amazonaws.com/token-expiration: "86400"
+  #         patchType: application/strategic-merge-patch+json
+  #         id: default-editor-aws-access
+  - objectTemplate: |          
+      apiVersion: v1
+      kind: LimitRange
+      metadata:
+        name: default-resources
+        namespace: {{ .Name | lower | replace "." "-" | replace "@" "-" | trimAll "." }}
+      spec:
+        limits:
+        - defaultRequest:
+            cpu: 0.2
+            memory: 100Mi
+          type: Container   
+  - objectTemplate: |
+      apiVersion: networking.k8s.io/v1
+      kind: NetworkPolicy
+      metadata:
+        name: allow-from-serving-system-namespace
+        namespace: {{ .Name | lower | replace "." "-" | replace "@" "-" | trimAll "." }}
+      spec:
+        ingress:
+        - from:
+          - namespaceSelector:
+              matchLabels:
+                serving.knative.openshift.io/system-namespace: "true"
+        podSelector: {}
+        policyTypes:
+        - Ingress
+# this is the right way to do it, not possible until: https://github.com/istio/api/issues/1965        
+  # - objectTemplate: |
+  #     apiVersion: security.istio.io/v1beta1
+  #     kind: AuthorizationPolicy
+  #     metadata:
+  #       name: allowlist-kfserving-pods
+  #       namespace: {{ .Name }}
+  #     spec:
+  #       selector:
+  #         matchExpressions:
+  #           - key: "serving.knative.dev/service"
+  #             operator: Exists
+  #       action: ALLOW
+  #       rules:
+  #       - {}
+# workaround        
+  - objectTemplate: |
+      apiVersion: security.istio.io/v1beta1
+      kind: AuthorizationPolicy
+      metadata:
+        name: allowlist-kfserving-pods
+        namespace: {{ .Name | lower | replace "." "-" | replace "@" "-" | trimAll "." }}
+      spec:
+        selector:
+          matchLabels:
+            workload-type: kfserving
+        action: ALLOW
+        rules:
+        - {}                            

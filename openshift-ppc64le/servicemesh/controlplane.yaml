@@ -1,0 +1,196 @@
+apiVersion: maistra.io/v2
+kind: ServiceMeshControlPlane
+metadata:
+  name: kubeflow
+spec:
+  version: v2.1
+  proxy:
+#    networking:
+#      trafficControl:
+#        outbound:
+#          excludedIPRanges: [${allowed_cidrs_csv}]
+    injection:
+      autoInject: true
+      neverInjectSelector:
+        - matchExpressions:
+          - key: openshift.io/build.name
+            operator: Exists
+        - matchExpressions:
+          - key: openshift.io/deployer-pod-for.name
+            operator: Exists    
+  tracing:
+    type: Jaeger
+    sampling: 10000
+  addons:
+    jaeger:
+      name: jaeger
+      install:
+        storage:
+          type: Memory
+    kiali:
+      enabled: true
+      name: kiali
+    grafana:
+      enabled: true
+  gateways:
+    additionalIngress:
+      kubeflow:
+        enabled: true
+        volumes:
+          - volume:
+              secret: 
+                secretName: proxy-tls
+            volumeMount:
+              name: proxy-tls
+              mountPath: /certs
+          - volume:
+              configMap: 
+                name: service-ca-bundle 
+            volumeMount:
+              name: service-ca-bundle
+              mountPath: /service-ca-bundle
+          - volume:
+              configMap: 
+                name: kube-root-ca.crt
+            volumeMount:
+              name: ocp-ca-bundle
+              mountPath: /ocp-ca-bundle
+        service:
+          metadata:
+            annotations:
+              service.alpha.openshift.io/serving-cert-secret-name: proxy-tls
+          ports:    
+            - name: http2
+              protocol: TCP
+              port: 80
+              targetPort: 8080
+            # - name: https
+            #   protocol: TCP
+            #   port: 443
+            #   targetPort: 443
+            - name: oauth
+              protocol: TCP
+              port: 9443
+              targetPort: 9443            
+            # - name: tls
+            #   protocol: TCP
+            #   port: 15443
+            #   targetPort: 15443
+          type: ClusterIP
+    ingress:
+      ingress: true
+      # volumes:
+      #   - volume:
+      #       secret: 
+      #         secretName: proxy-tls
+      #     volumeMount:
+      #       name: proxy-tls
+      #       mountPath: /certs
+      #   - volume:
+      #       configMap: 
+      #         name: trusted-ca-bundle 
+      #     volumeMount:
+      #       name: trusted-ca-bundle
+      #       mountPath: /ca-bundle            
+      # service:
+      #   metadata:
+      #     annotations:
+      #       service.alpha.openshift.io/serving-cert-secret-name: proxy-tls
+      #   ports:    
+      #     - name: http2
+      #       protocol: TCP
+      #       port: 80
+      #       targetPort: 8080
+      #     # - name: https
+      #     #   protocol: TCP
+      #     #   port: 443
+      #     #   targetPort: 443
+      #     - name: oauth
+      #       protocol: TCP
+      #       port: 9443
+      #       targetPort: 9443            
+      #     # - name: tls
+      #     #   protocol: TCP
+      #     #   port: 15443
+      #     #   targetPort: 15443
+  techPreview:
+    gateways:
+      kubeflow:
+        additionalContainers:
+          - name: oauth2-proxy
+            env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+            envFrom:
+            - secretRef:
+                name: oauth2-proxy
+            args:
+              - '-provider=openshift'
+              - '-pass-basic-auth=false'
+              - '-https-address=:9443'
+              - '-http-address='
+              - '-email-domain=*'
+              - '-upstream=http://$(POD_IP):8080'
+              - '-openshift-sar={"namespace":"kubeflow","resource":"pods","verb":"get"}'
+              - '-openshift-delegate-urls={"/": {"namespace":"kubeflow","resource":"pods","verb":"get"}}'
+              - '-tls-cert=/certs/tls.crt'
+              - '-tls-key=/certs/tls.key'
+              - '-client-id=kubeflow-istio'
+              - '-client-secret=SECRET'
+              - '-cookie-secret=SECRET'
+              - '-openshift-ca=/ocp-ca-bundle/ca.crt'
+              - '-openshift-ca=/service-ca-bundle/service-ca.crt'
+              - '-openshift-ca=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'  
+            image: 'registry.redhat.io/openshift4/ose-oauth-proxy:v4.8'
+            imagePullPolicy: Always
+            ports:
+              - containerPort: 8081
+                protocol: TCP
+                name: oauth-http
+            volumeMounts:
+              - name: proxy-tls
+                mountPath: /certs
+              - name: service-ca-bundle
+                mountPath: /service-ca-bundle
+              - name: ocp-ca-bundle
+                mountPath: /ocp-ca-bundle
+      # istio-ingressgateway:
+      #   additionalContainers:
+      #     - name: oauth2-proxy
+      #       env:
+      #       - name: POD_IP
+      #         valueFrom:
+      #           fieldRef:
+      #             apiVersion: v1
+      #             fieldPath: status.podIP
+      #       args:
+      #         - '-provider=openshift'
+      #         - '-pass-basic-auth=false'
+      #         - '-https-address=:9443'
+      #         - '-http-address='
+      #         - '-email-domain=*'
+      #         - '-upstream=http://$(POD_IP):8080'
+      #         - '-openshift-sar={"namespace":"${sm_cp_namespace}","resource":"pods","verb":"get"}'
+      #         - '-openshift-delegate-urls={"/": {"namespace":"${sm_cp_namespace}","resource":"pods","verb":"get"}}'
+      #         - '-tls-cert=/certs/tls.crt'
+      #         - '-tls-key=/certs/tls.key'
+      #         - '-client-id=kubeflow-istio'
+      #         - '-client-secret=SECRET'
+      #         - '-cookie-secret=SECRET'
+      #         - '-openshift-ca=/ca-bundle/ca-bundle.crt'
+      #         - '-openshift-ca=/ca-bundle/service-ca.crt'
+      #         - '-openshift-ca=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'               
+      #       image: 'quay.io/openshift/origin-oauth-proxy:4.6'
+      #       imagePullPolicy: Always
+      #       ports:
+      #         - containerPort: 8081
+      #           protocol: TCP
+      #           name: oauth-http
+      #       volumeMounts:
+      #         - name: proxy-tls
+      #           mountPath: /certs
+      #         - name: trusted-ca-bundle
+      #           mountPath: /ca-bundle  

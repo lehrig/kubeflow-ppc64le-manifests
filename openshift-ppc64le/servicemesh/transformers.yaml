@@ -1,0 +1,6 @@
+---
+nameReference:
+- kind: Secret
+  fieldSpecs:
+  - path: spec/techPreview/gateways/kubeflow/additionalContainers/envFrom/secretRef/name
+    kind: ServiceMeshControlPlane
