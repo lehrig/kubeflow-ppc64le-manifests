@@ -1,38 +1,34 @@
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-
-resources:
 # Cert-Manager
-- ../common/cert-manager/cert-manager-kube-system-resources/base
-- ../common/cert-manager/cert-manager-crds/base
-- ../common/cert-manager/cert-manager/overlays/self-signed
+- ../common/cert-manager/cert-manager/base
+- ../common/cert-manager/kubeflow-issuer/base
 # Istio
-- ../common/istio-1-9-0/istio-crds/base
-- ../common/istio-1-9-0/istio-namespace/base
-- ../common/istio-1-9-0/istio-install/base
+- ../common/istio-1-9/istio-crds/base
+- ../common/istio-1-9/istio-namespace/base
+- ../common/istio-1-9/istio-install/base
 # OIDC Authservice
 - ../common/oidc-authservice/base
 # Dex
 - ../common/dex/overlays/istio
 # KNative
-#- ../common/knative/knative-serving-crds/base
-#- ../common/knative/knative-serving-install/base
-#- ../common/knative/knative-eventing-crds/base
-#- ../common/knative/knative-eventing-install/base
-#- ../common/istio-1-9-0/cluster-local-gateway/base
+# -> Not supported yet (only needed for KServ)
+#- ../common/knative/knative-serving/overlays/gateways
+#- ../common/knative/knative-eventing/base
+#- ../common/istio-1-9/cluster-local-gateway/base
 # Kubeflow namespace
 - ../common/kubeflow-namespace/base
 # Kubeflow Roles
 - ../common/kubeflow-roles/base
 # Kubeflow Istio Resources
-- ../common/istio-1-9-0/kubeflow-istio-resources/base
+- ../common/istio-1-9/kubeflow-istio-resources/base
 
 
 # Kubeflow Pipelines
-- ../apps/pipeline/upstream/env/platform-agnostic-multi-user-pns
+- ../apps/pipeline/upstream/env/platform-agnostic-multi-user
 # KFServing
+# -> Not supported yet
 #- ../apps/kfserving/upstream/overlays/kubeflow
 # Katib
+# -> Not supported yet
 #- ../apps/katib/upstream/installs/katib-with-kubeflow
 # Central Dashboard
 - ../apps/centraldashboard/upstream/overlays/istio
@@ -50,17 +46,10 @@ resources:
 -  ../apps/tensorboard/tensorboard-controller/upstream/overlays/kubeflow
 # Tensorboard Controller
 -  ../apps/tensorboard/tensorboards-web-app/upstream/overlays/istio
-# TFJob Operator
-- ../apps/tf-training/upstream/overlays/kubeflow
-# Pytorch Operator
-#- ../apps/pytorch-job/upstream/overlays/kubeflow
+# Training Operator
+- ../apps/training-operator/upstream/overlays/kubeflow
 # MPI Operator
-#- ../apps/mpi-job/upstream/overlays/kubeflow
-# MXNet Operator
-#- ../apps/mxnet-job/upstream/overlays/kubeflow
-# XGBoost Operator
-#- ../apps/xgboost-job/upstream/overlays/kubeflow
-
+- ../apps/mpi-job/upstream/overlays/kubeflow
 # User namespace
 - ../common/user-namespace/base
 
@@ -103,24 +92,54 @@ patchesStrategicMerge:
 - kf-istio-resources.yaml
 
 images:
+- name: quay.io/jetstack/cert-manager-controller
+  newName: quay.io/ibm/cert-manager-controller-ppc64le
+  newTag: v1.3.1
+- name: quay.io/jetstack/cert-manager-webhook
+  newName: quay.io/ibm/cert-manager-webhook-ppc64le
+  newTag: v1.3.1
+- name: quay.io/jetstack/cert-manager-cainjector
+  newName: quay.io/ibm/cert-manager-cainjector-ppc64le
+  newTag: v1.3.1
+- name: docker.io/istio/proxyv2
+  newName: quay.io/ibm/istio-proxyv2-ppc64le
+  newTag: 1.9.6
+- name: docker.io/istio/pilot
+  newName: quay.io/ibm/istio-pilot-ppc64le
+  newTag: 1.9.6
 - name: gcr.io/arrikto/kubeflow/oidc-authservice
   newName: quay.io/ibm/kubeflow-oidc-authservice-ppc64le
   newTag: 28c59ef
 - name: quay.io/dexidp/dex
   newName: quay.io/ibm/kubeflow-dex-ppc64le
   newTag: v2.24.0
-- name: gcr.io/ml-pipeline/workflow-controller
-  newName: quay.io/ibm/kubeflow-workflow-controller-ppc64le
-  newTag: v2.12.9
-- name: gcr.io/ml-pipeline/argoexec
-  newName: quay.io/ibm/kubeflow-argoexec-ppc64le
-  newTag: v2.12.9
-- name: gcr.io/tfx-oss-public/ml_metadata_store_server
-  newName: quay.io/ibm/kubeflow-ml_metadata_store_server-ppc64le
-  newTag: 0.25.1
-- name: gcr.io/ml-pipeline/metadata-envoy
-  newName: quay.io/ibm/kubeflow-metadata-envoy-ppc64le
-  newTag: 1.5.0
+- name: gcr.io/ml-pipeline/api-server
+  newName: quay.io/ibm/kubeflow-api-server-ppc64le
+  newTag: 1.7.0
+- name: gcr.io/ml-pipeline/persistenceagent
+  newName: quay.io/ibm/kubeflow-persistenceagent-ppc64le
+  newTag: 1.7.0
+- name: gcr.io/ml-pipeline/scheduledworkflow
+  newName: quay.io/ibm/kubeflow-scheduledworkflow-ppc64le
+  newTag: 1.7.0
+- name: gcr.io/ml-pipeline/frontend
+  newName: quay.io/ibm/kubeflow-frontend-ppc64le
+  newTag: 1.7.0
+- name: gcr.io/ml-pipeline/viewer-crd-controller
+  newName: quay.io/ibm/kubeflow-viewer-crd-controller-ppc64le
+  newTag: 1.7.0
+- name: gcr.io/ml-pipeline/visualization-server
+  newName: quay.io/ibm/kubeflow-visualization-server-ppc64le
+  newTag: 1.7.0
+- name: gcr.io/ml-pipeline/metadata-writer
+  newName: quay.io/ibm/kubeflow-metadata-writer-ppc64le
+  newTag: 1.7.0
+- name: gcr.io/ml-pipeline/cache-deployer
+  newName: quay.io/ibm/kubeflow-cache-deployer-ppc64le
+  newTag: 1.7.0
+- name: gcr.io/ml-pipeline/cache-server
+  newName: quay.io/ibm/kubeflow-cache-server-ppc64le
+  newTag: 1.7.0
 - name: gcr.io/ml-pipeline/minio
   newName: quay.io/ibm/kubeflow-minio-ppc64le
   newTag: RELEASE.2019-04-09T01-22-30Z.1
@@ -133,84 +152,57 @@ images:
 - name: metacontroller/metacontroller:v0.3.0
   newName: quay.io/ibm/kubeflow-metacontroller-ppc64le
   newTag: v0.3.0
-- name: gcr.io/ml-pipeline/api-server
-  newName: quay.io/ibm/kubeflow-api-server-ppc64le
-  newTag: 1.5.0
-- name: gcr.io/ml-pipeline/persistenceagent
-  newName: quay.io/ibm/kubeflow-persistenceagent-ppc64le
-  newTag: 1.5.0
-- name: gcr.io/ml-pipeline/scheduledworkflow
-  newName: quay.io/ibm/kubeflow-scheduledworkflow-ppc64le
-  newTag: 1.5.0
-- name: gcr.io/ml-pipeline/frontend
-  newName: quay.io/ibm/kubeflow-frontend-ppc64le
-  newTag: 1.5.0
-- name: gcr.io/ml-pipeline/viewer-crd-controller
-  newName: quay.io/ibm/kubeflow-viewer-crd-controller-ppc64le
-  newTag: 1.5.0
-- name: gcr.io/ml-pipeline/visualization-server
-  newName: quay.io/ibm/kubeflow-visualization-server-ppc64le
-  newTag: 1.5.0
-- name: gcr.io/ml-pipeline/metadata-writer
-  newName: quay.io/ibm/kubeflow-metadata-writer-ppc64le
-  newTag: 1.5.0
-- name: gcr.io/ml-pipeline/cache-deployer
-  newName: quay.io/ibm/kubeflow-cache-deployer-ppc64le
-  newTag: 1.5.0
-- name: gcr.io/ml-pipeline/cache-server
-  newName: quay.io/ibm/kubeflow-cache-server-ppc64le
-  newTag: 1.5.0
-- name: public.ecr.aws/j1r0q0g6/notebooks/access-management
-  newName: quay.io/ibm/kubeflow-access-management-ppc64le
-  newTag: v1.3.0-rc.1
-- name: public.ecr.aws/j1r0q0g6/notebooks/profile-controller 
-  newName: quay.io/ibm/kubeflow-profile-controller-ppc64le
-  newTag: v1.3.0-rc.1
+- name: gcr.io/tfx-oss-public/ml_metadata_store_server
+  newName: quay.io/ibm/kubeflow-ml_metadata_store_server-ppc64le
+  newTag: 1.0.0
+- name: gcr.io/ml-pipeline/metadata-envoy
+  newName: quay.io/ibm/kubeflow-metadata-envoy-ppc64le
+  newTag: 1.7.0 
+- name: gcr.io/ml-pipeline/workflow-controller
+  newName: quay.io/ibm/kubeflow-workflow-controller-ppc64le
+  newTag: v3.1.6-patch-license-compliance
+- name: gcr.io/ml-pipeline/argoexec
+  newName: quay.io/ibm/kubeflow-argoexec-ppc64le
+  newTag: v3.1.6-patch-license-compliance
+- name: gcr.io/ml-pipeline/application-crd-controller
+  newName: quay.io/ibm/kubeflow-application-crd-controller-ppc64le
+  newTag: 1.0-beta-non-cluster-role
 - name: public.ecr.aws/j1r0q0g6/notebooks/central-dashboard
   newName: quay.io/ibm/kubeflow-central-dashboard-ppc64le
-  newTag: v1.3.0-rc.1
+  newTag: v1.4.0
 - name: public.ecr.aws/j1r0q0g6/notebooks/admission-webhook
   newName: quay.io/ibm/kubeflow-admission-webhook-ppc64le
-  newTag: v1.3.0-rc.1
-- name: quay.io/jetstack/cert-manager-controller
-  newName: quay.io/ibm/cert-manager-controller-ppc64le
-  newTag: v0.11.0
-- name: quay.io/jetstack/cert-manager-webhook
-  newName: quay.io/ibm/cert-manager-webhook-ppc64le
-  newTag: v0.11.0
-- name: quay.io/jetstack/cert-manager-cainjector
-  newName: quay.io/ibm/cert-manager-cainjector-ppc64le
-  newTag: v0.11.0
-- name: docker.io/istio/install-cni
-  newName: quay.io/ibm/istio-install-cni-ppc64le
-  newTag: 1.9.2
-- name: docker.io/istio/proxyv2
-  newName: quay.io/ibm/istio-proxyv2-ppc64le
-  newTag: 1.9.2
-- name: docker.io/istio/pilot
-  newName: quay.io/ibm/istio-pilot-ppc64le
-  newTag: 1.9.2
+  newTag: v1.4.0
 - name: public.ecr.aws/j1r0q0g6/notebooks/jupyter-web-app
   newName: quay.io/ibm/kubeflow-jupyter-web-app-ppc64le
-  newTag: v1.3.0-rc.1
+  newTag: v1.4.0
 - name: quay.io/kubeflow/tf-notebook-image
   newName: quay.io/ibm/kubeflow-notebook-image-ppc64le
   newTag: tensorflow-1.15.4-cpu-py3.6
 - name: public.ecr.aws/j1r0q0g6/notebooks/notebook-controller
   newName: quay.io/ibm/kubeflow-notebook-controller-ppc64le
-  newTag: v1.3.0-rc.1
-- name: public.ecr.aws/j1r0q0g6/notebooks/tensorboards-web-app
-  newName: quay.io/ibm/kubeflow-tensorboards-web-app-ppc64le
-  newTag: v1.3.0-rc.1
+  newTag: v1.4.0
+- name: public.ecr.aws/j1r0q0g6/notebooks/access-management
+  newName: quay.io/ibm/kubeflow-access-management-ppc64le
+  newTag: v1.4.0
+- name: public.ecr.aws/j1r0q0g6/notebooks/profile-controller
+  newName: quay.io/ibm/kubeflow-profile-controller-ppc64le
+  newTag: v1.4.0
+- name: public.ecr.aws/j1r0q0g6/notebooks/volumes-web-app
+  newName: quay.io/ibm/kubeflow-volumes-web-app-ppc64le
+  newTag: v1.4.0
 - name: public.ecr.aws/j1r0q0g6/notebooks/tensorboard-controller
   newName: quay.io/ibm/kubeflow-tensorboard-controller-ppc64le
-  newTag: v1.3.0-rc.1
+  newTag: v1.4.0
+- name: public.ecr.aws/j1r0q0g6/notebooks/tensorboards-web-app
+  newName: quay.io/ibm/kubeflow-tensorboards-web-app-ppc64le
+  newTag: v1.4.0
 - name: gcr.io/kubebuilder/kube-rbac-proxy
   newName: quay.io/brancz/kube-rbac-proxy
   newTag: v0.6.0-ppc64le
-- name: public.ecr.aws/j1r0q0g6/training/tf-operator
+- name: public.ecr.aws/j1r0q0g6/training/training-operator
   newName: quay.io/ibm/kubeflow-tf-operator-ppc64le
-  newTag: cd2fc1ff397b1f349f68524f4abd5013a32e3033
-- name: public.ecr.aws/j1r0q0g6/notebooks/volumes-web-app
-  newName: quay.io/ibm/kubeflow-volumes-web-app-ppc64le
-  newTag: v1.3.0-rc.1
+  newTag: 760ac1171dd30039a7363ffa03c77454bd714da5
+- name: public.ecr.aws/j1r0q0g6/training/training-operator
+  newName: quay.io/ibm/kubeflow-mpi-operator-ppc64le
+  newTag: v0.3.0

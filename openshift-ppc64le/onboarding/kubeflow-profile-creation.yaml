@@ -17,11 +17,11 @@ spec:
           name: {{ .Name }}
         resourceQuotaSpec:
           hard:
-            cpu: "8"
-            memory: 16Gi
+            cpu: "20"
+            memory: 64Gi
             "requests.nvidia.com/gpu": "10"
-            persistentvolumeclaims: "10"
-            requests.storage: "200Gi"
+            persistentvolumeclaims: "100"
+            requests.storage: "500Gi"
   - objectTemplate: | 
       apiVersion: rbac.authorization.k8s.io/v1
       kind: RoleBinding
