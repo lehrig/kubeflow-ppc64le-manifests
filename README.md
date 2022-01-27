@@ -7,6 +7,6 @@ These manifests base on the [official Kubeflow manifests](github.com/kubeflow/ma
 - Vanilla Kubernetes v1.17-v1.21 on ppc64le
 
 ## Supported Kubeflow Versions
-Please select appropriate Tag:
+Please select appropriate tag:
 - v1.3.0
 - v1.4.1
