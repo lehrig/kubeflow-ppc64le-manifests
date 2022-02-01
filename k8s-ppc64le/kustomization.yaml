@@ -1,3 +1,7 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
 # Cert-Manager
 - ../common/cert-manager/cert-manager/base
 - ../common/cert-manager/kubeflow-issuer/base
@@ -160,10 +164,10 @@ images:
   newTag: 1.7.0 
 - name: gcr.io/ml-pipeline/workflow-controller
   newName: quay.io/ibm/kubeflow-workflow-controller-ppc64le
-  newTag: v3.1.6-patch-license-compliance
+  newTag: v3.1.6
 - name: gcr.io/ml-pipeline/argoexec
   newName: quay.io/ibm/kubeflow-argoexec-ppc64le
-  newTag: v3.1.6-patch-license-compliance
+  newTag: v3.1.6
 - name: gcr.io/ml-pipeline/application-crd-controller
   newName: quay.io/ibm/kubeflow-application-crd-controller-ppc64le
   newTag: 1.0-beta-non-cluster-role
@@ -201,8 +205,8 @@ images:
   newName: quay.io/brancz/kube-rbac-proxy
   newTag: v0.6.0-ppc64le
 - name: public.ecr.aws/j1r0q0g6/training/training-operator
-  newName: quay.io/ibm/kubeflow-tf-operator-ppc64le
+  newName: quay.io/ibm/kubeflow-training-operator-ppc64le
   newTag: 760ac1171dd30039a7363ffa03c77454bd714da5
-- name: public.ecr.aws/j1r0q0g6/training/training-operator
+- name: mpioperator/mpi-operator
   newName: quay.io/ibm/kubeflow-mpi-operator-ppc64le
   newTag: v0.3.0

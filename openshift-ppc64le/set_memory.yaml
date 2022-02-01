@@ -13,3 +13,20 @@ spec:
             memory: 300Mi
           requests:
             memory: 200Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: training-operator
+  labels:
+    control-plane: kubeflow-training-operator
+spec:
+  template:
+    spec:
+      containers:
+      - name: training-operator
+        resources:
+          limits:
+            memory: 300Mi
+          requests:
+            memory: 200Mi

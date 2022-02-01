@@ -1,3 +1,7 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
 # Cert-Manager
 # -> Using OpenShift cert-manager Operator
 #- ../common/cert-manager/cert-manager/base
@@ -19,49 +23,48 @@
 #- ../common/knative/knative-eventing/base
 #- ../common/istio-1-9/cluster-local-gateway/base
 # Kubeflow namespace
-- ../common/kubeflow-namespace/base
+- https://github.com/kubeflow/manifests/common/kubeflow-namespace/base?ref=v1.4.1
 # Kubeflow Roles
-- ../common/kubeflow-roles/base
+- https://github.com/kubeflow/manifests/common/kubeflow-roles/base?ref=v1.4.1
 # Kubeflow Istio Resources
-- ../common/istio-1-9/kubeflow-istio-resources/base
+- https://github.com/kubeflow/manifests/common/istio-1-9/kubeflow-istio-resources/base?ref=v1.4.1
 
 # OpenShift: Service Mesh
 - servicemesh
 
 # Kubeflow Pipelines
-- ../apps/pipeline/upstream/env/platform-agnostic-multi-user
+- https://github.com/kubeflow/manifests/apps/pipeline/upstream/env/platform-agnostic-multi-user-emissary?ref=v1.4.1
 # KFServing
 # -> Not supported yet
 #- ../apps/kfserving/upstream/overlays/kubeflow
 # Katib
-# -> Not supported yet
-#- ../apps/katib/upstream/installs/katib-with-kubeflow
+- https://github.com/kubeflow/manifests/apps/katib/upstream/installs/katib-with-kubeflow?ref=v1.4.1
 # Central Dashboard
-- ../apps/centraldashboard/upstream/overlays/istio
+- https://github.com/kubeflow/manifests/apps/centraldashboard/upstream/overlays/istio?ref=v1.4.1
 # Admission Webhook
-- ../apps/admission-webhook/upstream/overlays/cert-manager
+- https://github.com/kubeflow/manifests/apps/admission-webhook/upstream/overlays/cert-manager?ref=v1.4.1
 # Notebook Controller
-- ../apps/jupyter/jupyter-web-app/upstream/overlays/istio
+- https://github.com/kubeflow/manifests/apps/jupyter/jupyter-web-app/upstream/overlays/istio?ref=v1.4.1
 # Jupyter Web App
-- ../apps/jupyter/notebook-controller/upstream/overlays/kubeflow
+- https://github.com/kubeflow/manifests/apps/jupyter/notebook-controller/upstream/overlays/kubeflow?ref=v1.4.1
 # Profiles + KFAM
-- ../apps/profiles/upstream/overlays/kubeflow
+- https://github.com/kubeflow/manifests/apps/profiles/upstream/overlays/kubeflow?ref=v1.4.1
 # Volumes Web App
-- ../apps/volumes-web-app/upstream/overlays/istio
+- https://github.com/kubeflow/manifests/apps/volumes-web-app/upstream/overlays/istio?ref=v1.4.1
 # Tensorboards Web App
--  ../apps/tensorboard/tensorboard-controller/upstream/overlays/kubeflow
+- https://github.com/kubeflow/manifests/apps/tensorboard/tensorboard-controller/upstream/overlays/kubeflow?ref=v1.4.1
 # Tensorboard Controller
--  ../apps/tensorboard/tensorboards-web-app/upstream/overlays/istio
+- https://github.com/kubeflow/manifests/apps/tensorboard/tensorboards-web-app/upstream/overlays/istio?ref=v1.4.1
 # Training Operator
-- ../apps/training-operator/upstream/overlays/kubeflow
+- https://github.com/kubeflow/manifests/apps/training-operator/upstream/overlays/kubeflow?ref=v1.4.1
 # MPI Operator
-- ../apps/mpi-job/upstream/overlays/kubeflow
+- https://github.com/kubeflow/manifests/apps/mpi-job/upstream/overlays/kubeflow?ref=v1.4.1
 # User namespace
 # -> Using OpenShift namespace configuration Operator
 #- ../common/user-namespace/base
 
 # OpenShift: Name Space Configuration for user onboarding
-- servicemesh
+- onboarding
 
 configMapGenerator:
   - name: global-parameters
@@ -95,6 +98,7 @@ configurations:
 patchesStrategicMerge:
 - set_memory.yaml
 - workflow-controller-deployment-patch.yaml
+- rewire-images-in-katib-config.yaml
 
 images:
 - name: gcr.io/ml-pipeline/api-server
@@ -144,13 +148,25 @@ images:
   newTag: 1.7.0 
 - name: gcr.io/ml-pipeline/workflow-controller
   newName: quay.io/ibm/kubeflow-workflow-controller-ppc64le
-  newTag: v3.1.6-patch-license-compliance
+  newTag: v3.1.6
 - name: gcr.io/ml-pipeline/argoexec
   newName: quay.io/ibm/kubeflow-argoexec-ppc64le
-  newTag: v3.1.6-patch-license-compliance
+  newTag: v3.1.6
 - name: gcr.io/ml-pipeline/application-crd-controller
   newName: quay.io/ibm/kubeflow-application-crd-controller-ppc64le
   newTag: 1.0-beta-non-cluster-role
+- name: docker.io/kubeflowkatib/katib-controller
+  newName: quay.io/mgiessing/katib-controller
+  newTag: v0.12.0
+- name: docker.io/kubeflowkatib/katib-db-manager
+  newName: quay.io/mgiessing/katib-db-manager
+  newTag: v0.12.0
+- name: docker.io/kubeflowkatib/katib-ui
+  newName: quay.io/mgiessing/katib-ui
+  newTag: v0.12.0
+- name: mysql
+  newName: quay.io/ibm/kubeflow-mariadb-ppc64le
+  newTag: 10.2.19
 - name: public.ecr.aws/j1r0q0g6/notebooks/central-dashboard
   newName: quay.io/ibm/kubeflow-central-dashboard-ppc64le
   newTag: v1.4.0
@@ -185,8 +201,8 @@ images:
   newName: quay.io/brancz/kube-rbac-proxy
   newTag: v0.6.0-ppc64le
 - name: public.ecr.aws/j1r0q0g6/training/training-operator
-  newName: quay.io/ibm/kubeflow-tf-operator-ppc64le
+  newName: quay.io/ibm/kubeflow-training-operator-ppc64le
   newTag: 760ac1171dd30039a7363ffa03c77454bd714da5
-- name: public.ecr.aws/j1r0q0g6/training/training-operator
+- name: mpioperator/mpi-operator
   newName: quay.io/ibm/kubeflow-mpi-operator-ppc64le
   newTag: v0.3.0
