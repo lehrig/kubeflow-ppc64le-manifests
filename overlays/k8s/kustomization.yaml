@@ -38,6 +38,7 @@ configurations:
 - global-params.yaml
 
 patchesStrategicMerge:
+- rewire-istio-images.yaml
 - kf-istio-resources.yaml
 
 images:
