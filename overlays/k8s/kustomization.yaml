@@ -4,19 +4,19 @@ kind: Kustomization
 resources:
 - ../../base
 # Cert-Manager
-- ../common/cert-manager/cert-manager/base
-- ../common/cert-manager/kubeflow-issuer/base
+- https://github.com/kubeflow/manifests/common/cert-manager/cert-manager/base?ref=v1.4.1
+- https://github.com/kubeflow/manifests/common/cert-manager/kubeflow-issuer/base?ref=v1.4.1
 # Istio
-- ../common/istio-1-9/istio-crds/base
-- ../common/istio-1-9/istio-namespace/base
-- ../common/istio-1-9/istio-install/base
+- https://github.com/kubeflow/manifests/common/istio-1-9/istio-crds/base?ref=v1.4.1
+- https://github.com/kubeflow/manifests/common/istio-1-9/istio-namespace/base?ref=v1.4.1
+- https://github.com/kubeflow/manifests/common/istio-1-9/istio-install/base?ref=v1.4.1
 # OIDC Authservice
-- ../common/oidc-authservice/base
+- https://github.com/kubeflow/manifests/common/oidc-authservice/base?ref=v1.4.1
 # Dex
-- ../common/dex/overlays/istio
+- https://github.com/kubeflow/manifests/common/dex/overlays/istio?ref=v1.4.1
 
 # User namespace
-- ../common/user-namespace/base
+- https://github.com/kubeflow/manifests/common/user-namespace/base?ref=v1.4.1
 
 # HTTPS
 - certificate.yaml
