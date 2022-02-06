@@ -12,8 +12,9 @@ resources:
 # Kubeflow Pipelines
 - https://github.com/kubeflow/manifests/apps/pipeline/upstream/env/platform-agnostic-multi-user-emissary?ref=v1.4.1
 # KFServing
-# -> Not supported yet
-#- ../apps/kfserving/upstream/overlays/kubeflow
+# -> Not fully supported yet - only controller and web app 
+# -> Controller errors out because knative is not there, delete statefulset controller for "clean" view
+- https://github.com/kubeflow/manifests/apps/kfserving/upstream/overlays/kubeflow?ref=v1.4.1
 # Katib
 - https://github.com/kubeflow/manifests/apps/katib/upstream/installs/katib-with-kubeflow?ref=v1.4.1
 # Central Dashboard
@@ -163,3 +164,9 @@ images:
 - name: mpioperator/mpi-operator
   newName: quay.io/ibm/kubeflow-mpi-operator-ppc64le
   newTag: v0.3.0
+- name: kfserving/models-web-app
+  newName: quay.io/mgiessing/models-web-app
+  newTag: v0.6.1
+- name: kfserving/kfserving-controller
+  newName: quay.io/mgiessing/kfserving-controller
+  newTag: v0.6.1
