@@ -13,7 +13,12 @@ data:
         "image": "quay.io/mgiessing/file-metrics-collector:v0.11.0"
       },
       "TensorFlowEvent": {
-        "image": "quay.io/mgiessing/tfevent-metrics-collector:v0.11.0"
+        "image": "quay.io/mgiessing/tfevent-metrics-collector:v0.11.0",
+        "resources": {
+          "limits": {
+            "memory": "1Gi"
+          }
+        }
       }
     }
   suggestion: |-
@@ -43,7 +48,12 @@ data:
         "image": "quay.io/mgiessing/suggestion-optuna:v0.11.0"
       },
       "enas": {
-        "image": "quay.io/mgiessing/suggestion-enas:v0.11.0"
+        "image": "quay.io/mgiessing/suggestion-enas:v0.11.0",
+        "resources": {
+          "limits": {
+            "memory": "200Mi"
+          }
+        }
       },
       "darts": {
         "image": "quay.io/mgiessing/suggestion-darts:v0.11.0"
