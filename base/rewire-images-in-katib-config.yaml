@@ -44,7 +44,6 @@ data:
       },
       "enas": {
         "image": "quay.io/mgiessing/suggestion-enas:v0.11.0",
-        }
       },
       "darts": {
         "image": "quay.io/mgiessing/suggestion-darts:v0.11.0"
