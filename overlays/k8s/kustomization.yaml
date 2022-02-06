@@ -1,0 +1,70 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+- ../../base
+# Cert-Manager
+- https://github.com/kubeflow/manifests/common/cert-manager/cert-manager-crds/base?ref=v1.3.0
+- https://github.com/kubeflow/manifests/common/cert-manager/cert-manager-kube-system-resources/base?ref=v1.3.0
+- https://github.com/kubeflow/manifests/common/cert-manager/cert-manager/overlays/self-signed?ref=v1.3.0
+# Istio
+- https://github.com/kubeflow/manifests/common/istio-1-9-0/istio-crds/base?ref=v1.3.0
+- https://github.com/kubeflow/manifests/common/istio-1-9-0/istio-namespace/base?ref=v1.3.0
+- https://github.com/kubeflow/manifests/common/istio-1-9-0/istio-install/base?ref=v1.3.0
+# OIDC Authservice
+- https://github.com/kubeflow/manifests/common/oidc-authservice/base?ref=v1.3.0
+# Dex
+- https://github.com/kubeflow/manifests/common/dex/overlays/istio?ref=v1.3.0
+
+# User namespace
+- https://github.com/kubeflow/manifests/common/user-namespace/base?ref=v1.3.0
+
+
+# HTTPS
+- certificate.yaml
+
+configMapGenerator:
+  - name: global-parameters
+    env: global-params.env
+
+vars:
+- name: externalIpAddress
+  objref:
+    kind: ConfigMap
+    name: global-parameters
+    apiVersion: v1
+  fieldref:
+    fieldpath: data.externalIpAddress
+
+configurations:
+- global-params.yaml
+
+patchesStrategicMerge:
+- rewire_istio_images.yaml
+- kf-istio-resources.yaml
+
+images:
+- name: gcr.io/arrikto/kubeflow/oidc-authservice
+  newName: quay.io/ibm/kubeflow-oidc-authservice-ppc64le
+  newTag: 28c59ef
+- name: quay.io/dexidp/dex
+  newName: quay.io/ibm/kubeflow-dex-ppc64le
+  newTag: v2.24.0
+- name: quay.io/jetstack/cert-manager-controller
+  newName: quay.io/ibm/cert-manager-controller-ppc64le
+  newTag: v0.11.0
+- name: quay.io/jetstack/cert-manager-webhook
+  newName: quay.io/ibm/cert-manager-webhook-ppc64le
+  newTag: v0.11.0
+- name: quay.io/jetstack/cert-manager-cainjector
+  newName: quay.io/ibm/cert-manager-cainjector-ppc64le
+  newTag: v0.11.0
+- name: docker.io/istio/install-cni
+  newName: quay.io/ibm/istio-install-cni-ppc64le
+  newTag: 1.9.2
+- name: docker.io/istio/proxyv2
+  newName: quay.io/ibm/istio-proxyv2-ppc64le
+  newTag: 1.9.2
+- name: docker.io/istio/pilot
+  newName: quay.io/ibm/istio-pilot-ppc64le
+  newTag: 1.9.2

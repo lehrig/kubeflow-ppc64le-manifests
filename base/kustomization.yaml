@@ -3,38 +3,36 @@ kind: Kustomization
 
 resources:
 # Kubeflow namespace
-- ../common/kubeflow-namespace/base
+- https://github.com/kubeflow/manifests/common/kubeflow-namespace/base?ref=v1.3.0
 # Kubeflow Roles
-- ../common/kubeflow-roles/base
-# Service Mesh
-- servicemesh
+- https://github.com/kubeflow/manifests/common/kubeflow-roles/base?ref=v1.3.0
 # Kubeflow Istio Resources
-- ../common/istio-1-9-0/kubeflow-istio-resources/base
+- https://github.com/kubeflow/manifests/common/istio-1-9-0/kubeflow-istio-resources/base?ref=v1.3.0
 
 # Kubeflow Pipelines
-- ../apps/pipeline/upstream/env/platform-agnostic-multi-user-pns
+- https://github.com/kubeflow/manifests/apps/pipeline/upstream/env/platform-agnostic-multi-user?ref=v1.3.0
 # KFServing
 #- ../apps/kfserving/upstream/overlays/kubeflow
 # Katib
-#- ../apps/katib/upstream/installs/katib-with-kubeflow
+- https://github.com/kubeflow/manifests/apps/katib/upstream/installs/katib-with-kubeflow?ref=v1.3.0
 # Central Dashboard
-- ../apps/centraldashboard/upstream/overlays/istio
+- https://github.com/kubeflow/manifests/apps/centraldashboard/upstream/overlays/istio?ref=v1.3.0
 # Admission Webhook
-- ../apps/admission-webhook/upstream/overlays/cert-manager
+- https://github.com/kubeflow/manifests/apps/admission-webhook/upstream/overlays/cert-manager?ref=v1.3.0
 # Notebook Controller
-- ../apps/jupyter/jupyter-web-app/upstream/overlays/istio
+- https://github.com/kubeflow/manifests/apps/jupyter/jupyter-web-app/upstream/overlays/istio?ref=v1.3.0
 # Jupyter Web App
-- ../apps/jupyter/notebook-controller/upstream/overlays/kubeflow
+- https://github.com/kubeflow/manifests/apps/jupyter/notebook-controller/upstream/overlays/kubeflow?ref=v1.3.0
 # Profiles + KFAM
-- ../apps/profiles/upstream/overlays/kubeflow
+- https://github.com/kubeflow/manifests/apps/profiles/upstream/overlays/kubeflow?ref=v1.3.0
 # Volumes Web App
-- ../apps/volumes-web-app/upstream/overlays/istio
+- https://github.com/kubeflow/manifests/apps/volumes-web-app/upstream/overlays/istio?ref=v1.3.0
 # Tensorboards Web App
--  ../apps/tensorboard/tensorboard-controller/upstream/overlays/kubeflow
+- https://github.com/kubeflow/manifests/apps/tensorboard/tensorboard-controller/upstream/overlays/kubeflow?ref=v1.3.0
 # Tensorboard Controller
--  ../apps/tensorboard/tensorboards-web-app/upstream/overlays/istio
+- https://github.com/kubeflow/manifests/apps/tensorboard/tensorboards-web-app/upstream/overlays/istio?ref=v1.3.0
 # TFJob Operator
-- ../apps/tf-training/upstream/overlays/kubeflow
+- https://github.com/kubeflow/manifests/apps/tf-training/upstream/overlays/kubeflow?ref=v1.3.0
 # Pytorch Operator
 #- ../apps/pytorch-job/upstream/overlays/kubeflow
 # MPI Operator
@@ -44,12 +42,7 @@ resources:
 # XGBoost Operator
 #- ../apps/xgboost-job/upstream/overlays/kubeflow
 
-# Name Space Configuration for user onboarding
-- onboarding 
-
 configMapGenerator:
-  - name: global-parameters
-    env: global-params.env
   - name: pipeline-install-config
     env: pipeline-params.env
     behavior: merge
@@ -64,21 +57,10 @@ configMapGenerator:
     files:
     - sync.py
 
-vars:
-- name: clusterDomain
-  objref:
-    kind: ConfigMap
-    name: global-parameters
-    apiVersion: v1
-  fieldref:
-    fieldpath: data.clusterDomain
-
-configurations:
-- global-params.yaml
-
 patchesStrategicMerge:
 - set_memory.yaml
 - workflow-controller-deployment-patch.yaml
+- rewire-images-in-katib-config.yaml
 
 images:
 - name: gcr.io/ml-pipeline/workflow-controller
@@ -168,3 +150,15 @@ images:
 - name: public.ecr.aws/j1r0q0g6/notebooks/volumes-web-app
   newName: quay.io/ibm/kubeflow-volumes-web-app-ppc64le
   newTag: v1.3.0-rc.1
+- name: docker.io/kubeflowkatib/katib-controller
+  newName: quay.io/mgiessing/katib-controller
+  newTag: v0.11.0
+- name: docker.io/kubeflowkatib/katib-db-manager
+  newName: quay.io/mgiessing/katib-db-manager
+  newTag: v0.11.0
+- name: docker.io/kubeflowkatib/katib-ui
+  newName: quay.io/mgiessing/katib-ui
+  newTag: v0.11.0
+- name: mysql
+  newName: quay.io/ibm/kubeflow-mariadb-ppc64le
+  newTag: 10.2.19
