@@ -9,10 +9,13 @@ These manifests base on the [official Kubeflow manifests](http://www.github.com/
 ## Supported Kubeflow Versions
 Please select appropriate tag:
 - v1.3.0
-- v1.4.1
+- main (v1.4.1 preview)
 
 ## Installation
 ```
+# select [main|v1.3.0]
+KUBEFLOW_VERSION=main
+wget https://raw.githubusercontent.com/lehrig/kubeflow-ppc64le-manifests/${KUBEFLOW_VERSION}/install_kubeflow.sh -O install_kubeflow.sh
 source install_kubeflow.sh
 ```
 
