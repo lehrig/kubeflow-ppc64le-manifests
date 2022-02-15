@@ -17,59 +17,62 @@ ORANGE='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-echo "${BOLD}Which Kubernetes environment do you have admin access to?${NORMAL}
+echo -e "${BOLD}Which Kubernetes environment do you have admin access to?${NORMAL}
 (1) Red Hat OpenShift
 (2) Vanilla Kubernetes"
 read -p "Selection [1|2]: " kubernetes_environment
 case "$kubernetes_environment" in 
-  1 ) kubernetes_environment_name="Red Hat OpenShift";;
+  1 ) kubernetes_environment_name="Red Hat OpenShift"
+      alias docker="podman"
+      ;;
   2 ) kubernetes_environment_name="Vanilla Kubernetes";;
-  * ) echo "invalid - exiting"; exit;;
+  * ) echo -e "invalid - exiting"; exit;;
 esac
 
-echo "\n${BOLD}To avoid toomanyrequests errors for Docker.io, do you want to store your Docker.io credentials?${NORMAL}"
+echo -e "\n${BOLD}To avoid toomanyrequests errors for Docker.io, do you want to store your Docker.io credentials?${NORMAL}"
 read -p "[y|n]: " store_credentials
 case "$store_credentials" in 
   y|Y ) while true; do
           read -p "Docker.io user name: " docker_user
 	  read -s -p "Docker.io password (input hidden): " docker_pass
-	  echo "\nTrying to log-in..." 
-	  logged_in=$(echo $docker_pass | docker login --username ${docker_user} --password-stdin)
-          echo ""
-	  if [[ "${logged_in}" == "Login Succeeded" ]]
+	  echo -e "\nTrying to log-in..." 
+	  logged_in=$(echo $docker_pass | docker login docker.io --username ${docker_user} --password-stdin)
+          echo -e ""
+	  echo -e "Debug: ${logged_in}"
+	  if [[ "${logged_in}" == "Login Succeeded"* ]]
 	  then
-            echo "${GREEN}Success${NC}: Docker was able to login to docker.io using your credentials!"  
+            echo -e "${GREEN}Success${NC}: Docker was able to login to docker.io using your credentials!"  
 	    break
           fi
-	  echo "${RED}Failed${NC}: Docker was unable to login to docker.io using your credentials! Please verify you have used the correct ones and try again!"
+	  echo -e "${RED}Failed${NC}: Docker was unable to login to docker.io using your credentials! Please verify you have used the correct ones and try again!"
 	done
         ;;
   n|N ) ;;
-  * ) echo "invalid - exiting"; exit;;
+  * ) echo -e "invalid - exiting"; exit;;
 esac
 
-echo ""
+echo -e ""
 read -p "${BOLD}Update your .bashrc file with Kubeflow variables (note: this is required if not already present)?${NORMAL} [y|n]: " update_bashrc
 case "$update_bashrc" in 
   y|Y ) ;;
   n|N ) ;;
-  * ) echo "invalid - exiting";;
+  * ) echo -e "invalid - exiting";;
 esac
 
-echo ""
-echo "${BOLD}====================================================${NORMAL}"
-echo "${BOLD}Installation summary${NORMAL}"
-echo "${BOLD}====================================================${NORMAL}"
-echo "- ${BOLD}Kubeflow${NORMAL}: ${kubeflow_version}"
-echo "- ${BOLD}Kubernetes environment${NORMAL}: ${kubernetes_environment_name}"
-echo "- ${BOLD}Store Docker.io credentials${NORMAL}: ${store_credentials}"
-echo "- ${BOLD}Update .bashrc file${NORMAL}: ${update_bashrc}"
-echo "${BOLD}====================================================${NORMAL}"
+echo -e ""
+echo -e "${BOLD}====================================================${NORMAL}"
+echo -e "${BOLD}Installation summary${NORMAL}"
+echo -e "${BOLD}====================================================${NORMAL}"
+echo -e "- ${BOLD}Kubeflow${NORMAL}: ${kubeflow_version}"
+echo -e "- ${BOLD}Kubernetes environment${NORMAL}: ${kubernetes_environment_name}"
+echo -e "- ${BOLD}Store Docker.io credentials${NORMAL}: ${store_credentials}"
+echo -e "- ${BOLD}Update .bashrc file${NORMAL}: ${update_bashrc}"
+echo -e "${BOLD}====================================================${NORMAL}"
 read -p "${BOLD}Proceed Kubeflow installation?${NORMAL} [y|n]: " proceed
 case "$proceed" in
   y|Y ) ;;
-  n|N ) echo "Kubeflow installation aborted."; exit;;
-  * ) echo "invalid - exiting"; exit;;
+  n|N ) echo -e "Kubeflow installation aborted."; exit;;
+  * ) echo -e "invalid - exiting"; exit;;
 esac
 
 ###########################################################################################################################
@@ -92,24 +95,25 @@ case "$store_credentials" in
 esac
 
 case "$update_bashrc" in
-  y|Y ) cat >> /root/.bashrc <<'EOF'
+  y|Y )
+cat >> /root/.bashrc <<'EOF'
 # clusterDomain equals oc get ingresses.config/cluster -o jsonpath={.spec.domain}
 export clusterDomain=apps.$(dnsdomainname)
 export externalIpAddress=$(hostname -i)
 export KUBEFLOW_BASE_DIR=/export
 export GIT=$KUBEFLOW_BASE_DIR/git
-export MANIFESTS=$GIT/manifests
-EOF	
+export MANIFESTS=$GIT/kubeflow-ppc64le-manifests
+EOF
 	case "$kubernetes_environment" in
         1 ) # OpenShift
-            cat >> /root/.bashrc <<'EOF'
+cat >> /root/.bashrc <<'EOF'
 export KUBEFLOW_KUSTOMIZE=$MANIFESTS/overlays/openshift
 export KUBE_PW=$(cat $(find /root -name "kubeadmin-password"))
 oc login -u kubeadmin -p $KUBE_PW --insecure-skip-tls-verify=true
 EOF
             ;;
         2 ) # k8s
-	    cat >> /root/.bashrc <<'EOF'
+cat >> /root/.bashrc <<'EOF'
 export KUBEFLOW_KUSTOMIZE=$MANIFESTS/overlays/k8s
 EOF
             ;;
@@ -137,13 +141,13 @@ oc apply -f https://github.com/jetstack/cert-manager/releases/download/v1.5.4/ce
 oc apply --kustomize $KUBEFLOW_KUSTOMIZE/subscriptions
 
 # Deploy Kubeflow
-while ! oc kustomize $KUBEFLOW_KUSTOMIZE | oc apply --kustomize $KUBEFLOW_KUSTOMIZE; do echo "Retrying to apply resources"; sleep 10; done
+while ! oc kustomize $KUBEFLOW_KUSTOMIZE | oc apply --kustomize $KUBEFLOW_KUSTOMIZE; do echo -e "Retrying to apply resources"; sleep 10; done
 #############################################
 ;;
 2 ) # k8s
 
 # Deploy Kubeflow
-while ! kubectl kustomize $KUBEFLOW_KUSTOMIZE | kubectl apply --kustomize $KUBEFLOW_KUSTOMIZE; do echo "Retrying to apply resources"; sleep 10; done
+while ! kubectl kustomize $KUBEFLOW_KUSTOMIZE | kubectl apply --kustomize $KUBEFLOW_KUSTOMIZE; do echo -e "Retrying to apply resources"; sleep 10; done
 ;;
 esac
 
