@@ -11,6 +11,11 @@ Please select appropriate tag:
 - v1.3.0
 - v1.4.1
 
+## Installation
+```
+source install_kubeflow.sh
+```
+
 ## Releasing
 1. Get relevant image updates from [official Kubeflow manifests](http://www.github.com/kubeflow/manifests/):
 ```
