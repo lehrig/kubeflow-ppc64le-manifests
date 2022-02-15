@@ -10,3 +10,18 @@ These manifests base on the [official Kubeflow manifests](http://www.github.com/
 Please select appropriate tag:
 - v1.3.0
 - v1.4.1
+
+## Releasing
+1. Get relevant image updates from [official Kubeflow manifests](http://www.github.com/kubeflow/manifests/):
+```
+kustomize build example | yq eval '.. | select(has("image")) | ."image"'
+```
+2. Update these files accordingly:
+- base/kustomization.yaml
+- overlays/k8s/kustomization.yaml
+- overlays/openshift/kustomization.yaml
+3. Manually update:
+- base/rewire-images-in-katib-config.yaml
+- base/pipeline-params.env
+- base/workflow-controller-deployment-patch.yaml
+- overlays/k8s/rewire-istio-images.yaml
