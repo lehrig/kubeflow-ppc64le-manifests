@@ -20,8 +20,22 @@ commonLabels:
 secretGenerator:
 - name: oauth2-proxy
   envs:
-  - ./oauth2-proxy.env
+  - oauth2-proxy.env
   type: Opaque
+
+configMapGenerator:
+  - name: global-parameters
+    env: global-params.env
+
+vars:
+- name: clusterDomain
+  objref:
+    kind: ConfigMap
+    name: global-parameters
+    apiVersion: v1
+  fieldref:
+    fieldpath: data.clusterDomain
 
 configurations:
 - transformers.yaml
+- global-params.yaml

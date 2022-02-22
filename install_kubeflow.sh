@@ -138,10 +138,15 @@ oc new-project cert-manager
 oc apply -f https://github.com/jetstack/cert-manager/releases/download/v1.5.4/cert-manager.yaml
 
 # Install subscriptions (operators from OperatorHub)
-oc apply --kustomize $KUBEFLOW_KUSTOMIZE/subscriptions
+while ! oc kustomize $KUBEFLOW_KUSTOMIZE/subscriptions | oc apply --kustomize $KUBEFLOW_KUSTOMIZE/subscriptions; do echo -e "Retrying to apply resources"; sleep 10; done
+
+# Configure service mesh
+while ! kubectl kustomize $KUBEFLOW_KUSTOMIZE/servicemesh | kubectl apply --kustomize $KUBEFLOW_KUSTOMIZE/servicemesh; do echo -e "Retrying to apply resources"; sleep 10; done
 
 # Deploy Kubeflow
 while ! oc kustomize $KUBEFLOW_KUSTOMIZE | oc apply --kustomize $KUBEFLOW_KUSTOMIZE; do echo -e "Retrying to apply resources"; sleep 10; done
+
+oc project kubeflow
 #############################################
 ;;
 2 ) # k8s
