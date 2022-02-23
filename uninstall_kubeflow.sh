@@ -62,6 +62,15 @@ case "$delete_base_dir" in
   * ) echo -e "invalid - exiting"; return;;
 esac
 
+echo -e ""
+read -p "${BOLD}Delete released persistent volumes?${NORMAL} [y]: " delete_released_pvs
+delete_released_pvs=${delete_released_pvs:-y}
+case "$delete_released_pvs" in
+  y|Y ) ;;
+  n|N ) ;;
+  * ) echo -e "invalid - exiting"; return;;
+esac
+
 echo -e "${BOLD}====================================================${NORMAL}"
 echo -e "${BOLD}Uninstall summary${NORMAL}"
 echo -e "${BOLD}====================================================${NORMAL}"
@@ -103,6 +112,12 @@ esac
 2 ) # k8s
 kubectl delete --kustomize $KUBEFLOW_KUSTOMIZE
 ;;
+esac
+
+case "$delete_released_pvs" in
+  y|Y ) kubectl get pv | grep Released | awk '$1 {print$1}' | while read vol; do kubectl delete pv/${vol}; done
+        ;;
+  * ) ;;
 esac
 
 case "$clean_bashrc" in
