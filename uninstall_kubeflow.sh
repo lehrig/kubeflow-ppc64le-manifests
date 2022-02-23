@@ -1,5 +1,5 @@
 ###########################################################################################################################
-# Kubeflow installation script
+# Kubeflow uninstall script
 #
 # Author: Sebastian Lehrig
 # License: Apache-2.0 License
@@ -24,19 +24,20 @@ case "$kubernetes_environment" in
       alias docker="podman"
       ;;
   2 ) kubernetes_environment_name="Vanilla Kubernetes";;
-  * ) echo -e "invalid - exiting"; exit;;
+  * ) echo -e "invalid - exiting"; return;;
 esac
 
 echo -e ""
 read -p "${BOLD}Cleanup your .bashrc by removing Kubeflow variables?${NORMAL} [y|n]: " clean_bashrc
+
 case "$clean_bashrc" in
   y|Y ) ;;
   n|N ) ;;
-  * ) echo -e "invalid - exiting";;
+  * ) echo -e "invalid - exiting"; return;;
 esac
 
 echo -e ""
-read -p "${BOLD}Delete KUBEFLOW_BASE_DIR (current value: "$(KUBEFLOW_BASE_DIR)") ?${NORMAL} [y|n]: " delete_base_dir
+read -p "${BOLD}Delete KUBEFLOW_BASE_DIR (current value: "${KUBEFLOW_BASE_DIR}") ?${NORMAL} [y|n]: " delete_base_dir
 case "$delete_base_dir" in
   y|Y ) if [ -z "${KUBEFLOW_BASE_DIR+X}" ]
         then
@@ -47,7 +48,7 @@ case "$delete_base_dir" in
         fi
 	;;
   n|N ) ;;
-  * ) echo -e "invalid - exiting";;
+  * ) echo -e "invalid - exiting"; return;;
 esac
 
 echo -e "${BOLD}====================================================${NORMAL}"
@@ -56,13 +57,13 @@ echo -e "${BOLD}====================================================${NORMAL}"
 echo -e "- ${BOLD}Kubernetes environment${NORMAL}: ${kubernetes_environment_name}"
 echo -e "- ${BOLD}Cleanup .bashrc file${NORMAL}: ${clean_bashrc}"
 echo -e "- ${BOLD}Delete Kubeflow resources${NORMAL}: yes"
-echo -e "- ${BOLD}Delete KUBEFLOW_BASE_DIR (current value: "$(KUBEFLOW_BASE_DIR)")${NORMAL}: ${delete_base_dir}"
+echo -e "- ${BOLD}Delete KUBEFLOW_BASE_DIR (current value: "${KUBEFLOW_BASE_DIR}")${NORMAL}: ${delete_base_dir}"
 echo -e "${BOLD}====================================================${NORMAL}"
 read -p "${BOLD}Proceed Kubeflow uninstall?${NORMAL} [y|n]: " proceed
 case "$proceed" in
   y|Y ) ;;
-  n|N ) echo -e "Kubeflow uninstall aborted."; exit;;
-  * ) echo -e "invalid - exiting"; exit;;
+  n|N ) echo -e "Kubeflow uninstall aborted."; return;;
+  * ) echo -e "invalid - exiting"; return;;
 esac
 
 ###########################################################################################################################

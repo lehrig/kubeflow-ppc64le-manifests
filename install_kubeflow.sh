@@ -26,7 +26,7 @@ case "$kubernetes_environment" in
       alias docker="podman"
       ;;
   2 ) kubernetes_environment_name="Vanilla Kubernetes";;
-  * ) echo -e "invalid - exiting"; exit;;
+  * ) echo -e "invalid - exiting"; return;;
 esac
 
 echo -e "\n${BOLD}To avoid toomanyrequests errors for Docker.io, do you want to store your Docker.io credentials?${NORMAL}"
@@ -48,7 +48,7 @@ case "$store_credentials" in
 	done
         ;;
   n|N ) ;;
-  * ) echo -e "invalid - exiting"; exit;;
+  * ) echo -e "invalid - exiting"; return;;
 esac
 
 echo -e ""
@@ -56,7 +56,7 @@ read -p "${BOLD}Update your .bashrc file with Kubeflow variables (note: this is 
 case "$update_bashrc" in 
   y|Y ) ;;
   n|N ) ;;
-  * ) echo -e "invalid - exiting";;
+  * ) echo -e "invalid - exiting"; return;;
 esac
 
 echo -e ""
@@ -71,8 +71,8 @@ echo -e "${BOLD}====================================================${NORMAL}"
 read -p "${BOLD}Proceed Kubeflow installation?${NORMAL} [y|n]: " proceed
 case "$proceed" in
   y|Y ) ;;
-  n|N ) echo -e "Kubeflow installation aborted."; exit;;
-  * ) echo -e "invalid - exiting"; exit;;
+  n|N ) echo -e "Kubeflow installation aborted."; return;;
+  * ) echo -e "invalid - exiting"; return;;
 esac
 
 ###########################################################################################################################
