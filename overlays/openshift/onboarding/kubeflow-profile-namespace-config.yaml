@@ -133,4 +133,42 @@ spec:
             workload-type: kfserving
         action: ALLOW
         rules:
-        - {}                            
+        - {}
+  - objectTemplate: |
+      apiVersion: security.istio.io/v1beta1
+      kind: AuthorizationPolicy
+      metadata:
+        name: bind-ml-pipeline-nb-{{ .Name | lower | replace "." "-" | replace "@" "-" | trimAll "." }}
+        namespace: kubeflow
+      spec:
+        selector:
+          matchLabels:
+            app: ml-pipeline
+        rules:
+        - from:
+          - source:
+              principals: [cluster.local/ns/{{ .Name | lower | replace "." "-" | replace "@" "-" | trimAll "." }}/sa/default-editor]
+  - objectTemplate: |
+      apiVersion: networking.istio.io/v1alpha3
+      kind: EnvoyFilter
+      metadata:
+        name: add-header
+        namespace: {{ .Name | lower | replace "." "-" | replace "@" "-" | trimAll "." }}
+      spec:
+        configPatches:
+        - applyTo: VIRTUAL_HOST
+          match:
+            context: SIDECAR_OUTBOUND
+            routeConfiguration:
+              vhost:
+                name: ml-pipeline.kubeflow.svc.cluster.local:8888
+                route:
+                  name: default
+          patch:
+            operation: MERGE
+            value:
+              request_headers_to_add:
+              - append: true
+                header:
+                  key: kubeflow-userid
+                  value: {{ .Name }}

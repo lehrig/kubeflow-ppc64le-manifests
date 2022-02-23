@@ -77,4 +77,4 @@ spec:
       subjects:
       - kind: User
         apiGroup: rbac.authorization.k8s.io
-        name: {{ .Name }}                   
+        name: {{ .Name }}
