@@ -18,18 +18,28 @@ NC='\033[0m'
 echo -e "${BOLD}In which Kubernetes environment is Kubeflow installed?${NORMAL}
 (1) Red Hat OpenShift
 (2) Vanilla Kubernetes"
-read -p "Selection [1|2]: " kubernetes_environment
+read -p "Selection [1]: " kubernetes_environment
+kubernetes_environment=${kubernetes_environment:-1}
 case "$kubernetes_environment" in 
   1 ) kubernetes_environment_name="Red Hat OpenShift"
       alias docker="podman"
+
+       echo -e ""
+      read -p "${BOLD}Uninstall OpenShift operators (Cert-Manager, Service Mesh (incl. Elasticsearch, Kiali, Jaeger), Namespace-Configuration)?${NORMAL} [y]: " uninstall_operators
+      uninstall_operators=${uninstall_operators:-y}
+      case "$uninstall_operators" in
+        y|Y ) ;;
+        n|N ) ;;
+        * ) echo -e "invalid - exiting"; return;;
+      esac
       ;;
   2 ) kubernetes_environment_name="Vanilla Kubernetes";;
   * ) echo -e "invalid - exiting"; return;;
 esac
 
 echo -e ""
-read -p "${BOLD}Cleanup your .bashrc by removing Kubeflow variables?${NORMAL} [y|n]: " clean_bashrc
-
+read -p "${BOLD}Cleanup your .bashrc by removing Kubeflow variables?${NORMAL} [y]: " clean_bashrc
+clean_bashrc=${clean_bashrc:-y}
 case "$clean_bashrc" in
   y|Y ) ;;
   n|N ) ;;
@@ -37,7 +47,8 @@ case "$clean_bashrc" in
 esac
 
 echo -e ""
-read -p "${BOLD}Delete KUBEFLOW_BASE_DIR (current value: "${KUBEFLOW_BASE_DIR}") ?${NORMAL} [y|n]: " delete_base_dir
+read -p "${BOLD}Delete KUBEFLOW_BASE_DIR (current value: "${KUBEFLOW_BASE_DIR}") ?${NORMAL} [y]: " delete_base_dir
+delete_base_dir=${delete_base_dir:-y}
 case "$delete_base_dir" in
   y|Y ) if [ -z "${KUBEFLOW_BASE_DIR+X}" ]
         then
@@ -55,11 +66,19 @@ echo -e "${BOLD}====================================================${NORMAL}"
 echo -e "${BOLD}Uninstall summary${NORMAL}"
 echo -e "${BOLD}====================================================${NORMAL}"
 echo -e "- ${BOLD}Kubernetes environment${NORMAL}: ${kubernetes_environment_name}"
+case "$kubernetes_environment" in
+1 ) # OpenShift
+echo -e "- ${BOLD}Uninstall OpenShift Operators${NORMAL}: ${uninstall_operators}"
+;;
+2 ) # k8s
+;;
+esac
 echo -e "- ${BOLD}Cleanup .bashrc file${NORMAL}: ${clean_bashrc}"
-echo -e "- ${BOLD}Delete Kubeflow resources${NORMAL}: yes"
+echo -e "- ${BOLD}Delete Kubeflow resources${NORMAL}: y"
 echo -e "- ${BOLD}Delete KUBEFLOW_BASE_DIR (current value: "${KUBEFLOW_BASE_DIR}")${NORMAL}: ${delete_base_dir}"
 echo -e "${BOLD}====================================================${NORMAL}"
-read -p "${BOLD}Proceed Kubeflow uninstall?${NORMAL} [y|n]: " proceed
+read -p "${BOLD}Proceed Kubeflow uninstall?${NORMAL} [y]: " proceed
+proceed=${proceed:-y}
 case "$proceed" in
   y|Y ) ;;
   n|N ) echo -e "Kubeflow uninstall aborted."; return;;
@@ -73,8 +92,12 @@ case "$kubernetes_environment" in
 
 oc delete --kustomize $KUBEFLOW_KUSTOMIZE
 oc delete --kustomize $KUBEFLOW_KUSTOMIZE/servicemesh
-oc delete --kustomize $KUBEFLOW_KUSTOMIZE/subscriptions
-oc delete -f https://github.com/jetstack/cert-manager/releases/download/v1.5.4/cert-manager.yaml
+case "$uninstall_operators" in
+  y|Y ) oc delete --kustomize $KUBEFLOW_KUSTOMIZE/subscriptions
+        oc delete -f https://github.com/jetstack/cert-manager/releases/download/v1.5.4/cert-manager.yaml
+        ;;
+  * ) ;;
+esac
 #############################################
 ;;
 2 ) # k8s

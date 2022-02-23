@@ -20,17 +20,28 @@ NC='\033[0m'
 echo -e "${BOLD}Which Kubernetes environment do you have admin access to?${NORMAL}
 (1) Red Hat OpenShift
 (2) Vanilla Kubernetes"
-read -p "Selection [1|2]: " kubernetes_environment
+read -p "Selection [1]: " kubernetes_environment
+kubernetes_environment=${kubernetes_environment:-1}
 case "$kubernetes_environment" in 
   1 ) kubernetes_environment_name="Red Hat OpenShift"
       alias docker="podman"
+
+      echo -e ""
+      read -p "${BOLD}Install OpenShift operators (Cert-Manager, Service Mesh (incl. Elasticsearch, Kiali, Jaeger), Namespace-Configuration)?${NORMAL} [y]: " install_operators
+      install_operators=${install_operators:-y}
+      case "$install_operators" in
+        y|Y ) ;;
+        n|N ) ;;
+        * ) echo -e "invalid - exiting"; return;;
+      esac
       ;;
   2 ) kubernetes_environment_name="Vanilla Kubernetes";;
   * ) echo -e "invalid - exiting"; return;;
 esac
 
-echo -e "\n${BOLD}To avoid toomanyrequests errors for Docker.io, do you want to store your Docker.io credentials?${NORMAL}"
-read -p "[y|n]: " store_credentials
+echo -e ""
+read -p "${BOLD}To avoid toomanyrequests errors for Docker.io, do you want to store your Docker.io credentials?${NORMAL} [y]:" store_credentials
+store_credentials=${store_credentials:-y}
 case "$store_credentials" in 
   y|Y ) while true; do
           read -p "Docker.io user name: " docker_user
@@ -41,7 +52,7 @@ case "$store_credentials" in
 	  echo -e "Debug: ${logged_in}"
 	  if [[ "${logged_in}" == "Login Succeeded"* ]]
 	  then
-            echo -e "${GREEN}Success${NC}: Docker was able to login to docker.io using your credentials!"  
+            echo -e "${GREEN}Success${NC}: Docker was able to login to docker.io using your credentials!"
 	    break
           fi
 	  echo -e "${RED}Failed${NC}: Docker was unable to login to docker.io using your credentials! Please verify you have used the correct ones and try again!"
@@ -52,7 +63,8 @@ case "$store_credentials" in
 esac
 
 echo -e ""
-read -p "${BOLD}Update your .bashrc file with Kubeflow variables (note: this is required if not already present)?${NORMAL} [y|n]: " update_bashrc
+read -p "${BOLD}Update your .bashrc file with Kubeflow variables (note: this is required if not already present)?${NORMAL} [y]: " update_bashrc
+update_bashrc=${update_bashrc:-y}
 case "$update_bashrc" in 
   y|Y ) ;;
   n|N ) ;;
@@ -60,15 +72,28 @@ case "$update_bashrc" in
 esac
 
 echo -e ""
+read -p "${BOLD}Please enter your KUBEFLOW_BASE_DIR (directory where Kubeflow installation files will be stored) [default: /opt/kubeflow]: " kubeflow_base_dir
+kubeflow_base_dir=${kubeflow_base_dir:-/opt/kubeflow}
+
+echo -e ""
 echo -e "${BOLD}====================================================${NORMAL}"
 echo -e "${BOLD}Installation summary${NORMAL}"
 echo -e "${BOLD}====================================================${NORMAL}"
 echo -e "- ${BOLD}Kubeflow${NORMAL}: ${kubeflow_version}"
 echo -e "- ${BOLD}Kubernetes environment${NORMAL}: ${kubernetes_environment_name}"
+case "$kubernetes_environment" in
+1 ) # OpenShift
+echo -e "- ${BOLD}Install OpenShift Operators${NORMAL}: ${install_operators}"
+;;
+2 ) # k8s
+;;
+esac
 echo -e "- ${BOLD}Store Docker.io credentials${NORMAL}: ${store_credentials}"
 echo -e "- ${BOLD}Update .bashrc file${NORMAL}: ${update_bashrc}"
+echo -e "- ${BOLD}KUBEFLOW_BASE_DIR${NORMAL}: ${kubeflow_base_dir}"
 echo -e "${BOLD}====================================================${NORMAL}"
-read -p "${BOLD}Proceed Kubeflow installation?${NORMAL} [y|n]: " proceed
+read -p "${BOLD}Proceed Kubeflow installation?${NORMAL} [y]: " proceed
+proceed=${proceed:-y}
 case "$proceed" in
   y|Y ) ;;
   n|N ) echo -e "Kubeflow installation aborted."; return;;
@@ -101,7 +126,7 @@ cat >> /root/.bashrc <<'EOF'
 # clusterDomain equals oc get ingresses.config/cluster -o jsonpath={.spec.domain}
 export clusterDomain=apps.$(dnsdomainname)
 export externalIpAddress=$(hostname -i)
-export KUBEFLOW_BASE_DIR=/export
+export KUBEFLOW_BASE_DIR=$kubeflow_base_dir
 export GIT=$KUBEFLOW_BASE_DIR/git
 export MANIFESTS=$GIT/kubeflow-ppc64le-manifests
 EOF
@@ -135,14 +160,18 @@ git clone --branch main https://github.com/lehrig/kubeflow-ppc64le-manifests.git
 case "$kubernetes_environment" in
 1 ) # OpenShift
 
-# Install Cert Manager Operator
-# See: https://cert-manager.io/docs/installation/openshift/
-# TODO: Try from OperatorHub (when Kubeflow supports higher cert-manager versions)
-oc new-project cert-manager
-oc apply -f https://github.com/jetstack/cert-manager/releases/download/v1.5.4/cert-manager.yaml
+case "$install_operators" in
+  y|Y ) # Install Cert Manager Operator
+        # See: https://cert-manager.io/docs/installation/openshift/
+        # TODO: Try from OperatorHub (when Kubeflow supports higher cert-manager versions)
+        oc new-project cert-manager
+        oc apply -f https://github.com/jetstack/cert-manager/releases/download/v1.5.4/cert-manager.yaml
 
-# Install subscriptions (operators from OperatorHub)
-while ! oc kustomize $KUBEFLOW_KUSTOMIZE/subscriptions | oc apply --kustomize $KUBEFLOW_KUSTOMIZE/subscriptions; do echo -e "Retrying to apply resources"; sleep 10; done
+        # Install subscriptions (operators from OperatorHub)
+        while ! oc kustomize $KUBEFLOW_KUSTOMIZE/subscriptions | oc apply --kustomize $KUBEFLOW_KUSTOMIZE/subscriptions; do echo -e "Retrying to apply resources"; sleep 10; done
+        ;;
+  * ) ;;
+esac
 
 # Configure service mesh
 while ! oc kustomize $KUBEFLOW_KUSTOMIZE/servicemesh | oc apply --kustomize $KUBEFLOW_KUSTOMIZE/servicemesh; do echo -e "Retrying to apply resources"; sleep 10; done
