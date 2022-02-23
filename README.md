@@ -11,15 +11,22 @@ Please select appropriate tag:
 - v1.3.0
 - main (v1.4.1 preview)
 
-## Installation
+## Install
 ```
 # select [main|v1.3.0]
 KUBEFLOW_VERSION=main
-wget https://raw.githubusercontent.com/lehrig/kubeflow-ppc64le-manifests/${KUBEFLOW_VERSION}/install_kubeflow.sh -O install_kubeflow.sh
+wget https://raw.githubusercontent.com/lehrig/kubeflow-ppc64le-manifests/${KUBEFLOW_VERSION}/install_kubeflow.sh
 source install_kubeflow.sh
 ```
+## Uninstall
+```
+# select [main|v1.3.0]
+KUBEFLOW_VERSION=main
+wget https://raw.githubusercontent.com/lehrig/kubeflow-ppc64le-manifests/${KUBEFLOW_VERSION}/uninstall_kubeflow.sh
+source uninstall_kubeflow.sh
+```
 
-## Releasing
+## Release
 1. Get relevant image updates from [official Kubeflow manifests](http://www.github.com/kubeflow/manifests/):
 ```
 kustomize build example | yq eval '.. | select(has("image")) | ."image"'
