@@ -97,6 +97,7 @@ esac
 case "$update_bashrc" in
   y|Y )
 cat >> /root/.bashrc <<'EOF'
+###### BEGIN KUBEFLOW ######
 # clusterDomain equals oc get ingresses.config/cluster -o jsonpath={.spec.domain}
 export clusterDomain=apps.$(dnsdomainname)
 export externalIpAddress=$(hostname -i)
@@ -118,6 +119,9 @@ export KUBEFLOW_KUSTOMIZE=$MANIFESTS/overlays/k8s
 EOF
             ;;
         esac
+cat >> /root/.bashrc <<'EOF'
+###### END KUBEFLOW ######
+EOF
 	source /root/.bashrc
         ;;
   * ) ;;
@@ -141,7 +145,7 @@ oc apply -f https://github.com/jetstack/cert-manager/releases/download/v1.5.4/ce
 while ! oc kustomize $KUBEFLOW_KUSTOMIZE/subscriptions | oc apply --kustomize $KUBEFLOW_KUSTOMIZE/subscriptions; do echo -e "Retrying to apply resources"; sleep 10; done
 
 # Configure service mesh
-while ! kubectl kustomize $KUBEFLOW_KUSTOMIZE/servicemesh | kubectl apply --kustomize $KUBEFLOW_KUSTOMIZE/servicemesh; do echo -e "Retrying to apply resources"; sleep 10; done
+while ! oc kustomize $KUBEFLOW_KUSTOMIZE/servicemesh | oc apply --kustomize $KUBEFLOW_KUSTOMIZE/servicemesh; do echo -e "Retrying to apply resources"; sleep 10; done
 
 # Deploy Kubeflow
 while ! oc kustomize $KUBEFLOW_KUSTOMIZE | oc apply --kustomize $KUBEFLOW_KUSTOMIZE; do echo -e "Retrying to apply resources"; sleep 10; done
