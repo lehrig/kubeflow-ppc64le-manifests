@@ -13,6 +13,7 @@ resources:
 - servicemeshmember.yaml
 - allow-apiserver-webhooks.yaml
 - htpasswd-oauth.yaml
+- allow-from-default-namespace.yaml
 
 commonLabels:
   app.kubernetes.io/part-of: kubeflow
