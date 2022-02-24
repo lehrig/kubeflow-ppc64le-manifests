@@ -106,12 +106,12 @@ case "$store_credentials" in
   y|Y ) case "$kubernetes_environment" in
         1 ) # Add docker.io account settings into OpenShift secret 
             oc get secret/pull-secret -n openshift-config --template='{{index .data ".dockerconfigjson" | base64decode}}' > dockerconfig.json
-            oc registry login --registry="docker.io" --auth-basic="$DOCKER_USER:$DOCKER_PW" --to=dockerconfig.json
+            oc registry login --registry="docker.io" --auth-basic="$docker_user:$docker_pass" --to=dockerconfig.json
             oc set data secret/pull-secret -n openshift-config --from-file=.dockerconfigjson=dockerconfig.json
             rm -f dockerconfig.json
 	    ;;
         2 ) # Add docker.io as imagePullSecret to default serviceaccount 
-            kubectl create secret docker-registry myregistrykey --docker-server=docker.io --docker-username=$DOCKER_USER --docker-password=$DOCKER_PW
+            kubectl create secret docker-registry myregistrykey --docker-server=docker.io --docker-username=$docker_user --docker-password=$docker_pass
             kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "myregistrykey"}]}'
             ;;
         esac 	 
