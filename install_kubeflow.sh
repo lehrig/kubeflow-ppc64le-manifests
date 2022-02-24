@@ -127,20 +127,20 @@ cat >> /root/.bashrc <<EOF
 export clusterDomain=apps.$(dnsdomainname)
 export externalIpAddress=$(hostname -i)
 export KUBEFLOW_BASE_DIR=$kubeflow_base_dir
-export GIT=$KUBEFLOW_BASE_DIR/git
-export MANIFESTS=$GIT/kubeflow-ppc64le-manifests
+export GIT=$kubeflow_base_dir/git
+export MANIFESTS=$kubeflow_base_dir/git/kubeflow-ppc64le-manifests
 EOF
 	case "$kubernetes_environment" in
         1 ) # OpenShift
 cat >> /root/.bashrc <<EOF
-export KUBEFLOW_KUSTOMIZE=$MANIFESTS/overlays/openshift
+export KUBEFLOW_KUSTOMIZE=$kubeflow_base_dir/manifests/overlays/openshift
 export KUBE_PW=$(cat $(find /root -name "kubeadmin-password"))
 oc login -u kubeadmin -p $KUBE_PW --insecure-skip-tls-verify=true
 EOF
             ;;
         2 ) # k8s
 cat >> /root/.bashrc <<EOF
-export KUBEFLOW_KUSTOMIZE=$MANIFESTS/overlays/k8s
+export KUBEFLOW_KUSTOMIZE=$kubeflow_base_dir/manifests/overlays/k8s
 EOF
             ;;
         esac
