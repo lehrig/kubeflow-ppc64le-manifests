@@ -121,8 +121,8 @@ esac
 
 case "$update_bashrc" in
   y|Y )
-$git=$kubeflow_base_dir/git
-$manifests=$git/kubeflow-ppc64le-manifests
+git=$kubeflow_base_dir/git
+manifests=$git/kubeflow-ppc64le-manifests
 
 cat >> /root/.bashrc <<EOF
 ###### BEGIN KUBEFLOW ######
