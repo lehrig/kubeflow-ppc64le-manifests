@@ -126,7 +126,7 @@ cat >> /root/.bashrc <<'EOF'
 # clusterDomain equals oc get ingresses.config/cluster -o jsonpath={.spec.domain}
 export clusterDomain=apps.$(dnsdomainname)
 export externalIpAddress=$(hostname -i)
-export KUBEFLOW_BASE_DIR=$kubeflow_base_dir
+export KUBEFLOW_BASE_DIR=${kubeflow_base_dir}
 export GIT=$KUBEFLOW_BASE_DIR/git
 export MANIFESTS=$GIT/kubeflow-ppc64le-manifests
 EOF
