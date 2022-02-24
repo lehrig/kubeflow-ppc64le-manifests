@@ -12,7 +12,7 @@ spec:
       kind: ServiceMeshMember
       metadata:
         name: default
-        namespace: {{ .Name | lower | replace "." "-" | replace "@" "-" | trimAll "." }}
+        namespace: {{ .Name }}
       spec:
         controlPlaneRef:
           namespace: istio-system
@@ -22,7 +22,7 @@ spec:
       kind: RoleBinding
       metadata:
         name: default-editor-nonroot
-        namespace: {{ .Name | lower | replace "." "-" | replace "@" "-" | trimAll "." }}
+        namespace: {{ .Name }}
       roleRef:
         apiGroup: rbac.authorization.k8s.io
         kind: ClusterRole
@@ -35,7 +35,7 @@ spec:
       kind: RoleBinding
       metadata:
         name: default-nonroot
-        namespace: {{ .Name | lower | replace "." "-" | replace "@" "-" | trimAll "." }}
+        namespace: {{ .Name }}
       roleRef:
         apiGroup: rbac.authorization.k8s.io
         kind: ClusterRole
@@ -48,7 +48,7 @@ spec:
       kind: RoleBinding
       metadata:
         name: default-edit
-        namespace: {{ .Name | lower | replace "." "-" | replace "@" "-" | trimAll "." }}
+        namespace: {{ .Name }}
       roleRef:
         apiGroup: rbac.authorization.k8s.io
         kind: ClusterRole
@@ -83,7 +83,7 @@ spec:
       kind: LimitRange
       metadata:
         name: default-resources
-        namespace: {{ .Name | lower | replace "." "-" | replace "@" "-" | trimAll "." }}
+        namespace: {{ .Name }}
       spec:
         limits:
         - defaultRequest:
@@ -95,7 +95,7 @@ spec:
       kind: NetworkPolicy
       metadata:
         name: allow-from-serving-system-namespace
-        namespace: {{ .Name | lower | replace "." "-" | replace "@" "-" | trimAll "." }}
+        namespace: {{ .Name }}
       spec:
         ingress:
         - from:
@@ -126,7 +126,7 @@ spec:
       kind: AuthorizationPolicy
       metadata:
         name: allowlist-kfserving-pods
-        namespace: {{ .Name | lower | replace "." "-" | replace "@" "-" | trimAll "." }}
+        namespace: {{ .Name }}
       spec:
         selector:
           matchLabels:
@@ -138,7 +138,7 @@ spec:
       apiVersion: security.istio.io/v1beta1
       kind: AuthorizationPolicy
       metadata:
-        name: bind-ml-pipeline-nb-{{ .Name | lower | replace "." "-" | replace "@" "-" | trimAll "." }}
+        name: bind-ml-pipeline-nb-{{ .Name }}
         namespace: kubeflow
       spec:
         selector:
@@ -147,28 +147,4 @@ spec:
         rules:
         - from:
           - source:
-              principals: [cluster.local/ns/{{ .Name | lower | replace "." "-" | replace "@" "-" | trimAll "." }}/sa/default-editor]
-  - objectTemplate: |
-      apiVersion: networking.istio.io/v1alpha3
-      kind: EnvoyFilter
-      metadata:
-        name: add-header
-        namespace: {{ .Name | lower | replace "." "-" | replace "@" "-" | trimAll "." }}
-      spec:
-        configPatches:
-        - applyTo: VIRTUAL_HOST
-          match:
-            context: SIDECAR_OUTBOUND
-            routeConfiguration:
-              vhost:
-                name: ml-pipeline.kubeflow.svc.cluster.local:8888
-                route:
-                  name: default
-          patch:
-            operation: MERGE
-            value:
-              request_headers_to_add:
-              - append: true
-                header:
-                  key: kubeflow-userid
-                  value: {{ .Name }}
+              principals: [cluster.local/ns/{{ .Name }}/sa/default-editor]
