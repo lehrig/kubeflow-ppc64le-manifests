@@ -148,3 +148,27 @@ spec:
         - from:
           - source:
               principals: [cluster.local/ns/{{ .Name }}/sa/default-editor]
+  - objectTemplate: |
+      apiVersion: networking.istio.io/v1alpha3
+      kind: EnvoyFilter
+      metadata:
+        name: add-header
+        namespace: {{ .Name }}
+      spec:
+        configPatches:
+        - applyTo: VIRTUAL_HOST
+          match:
+            context: SIDECAR_OUTBOUND
+            routeConfiguration:
+              vhost:
+                name: ml-pipeline.kubeflow.svc.cluster.local:8888
+                route:
+                  name: default
+          patch:
+            operation: MERGE
+            value:
+              request_headers_to_add:
+              - append: true
+                header:
+                  key: kubeflow-userid
+                  value: {{ .Annotations.owner }}

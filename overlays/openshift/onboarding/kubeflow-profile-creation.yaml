@@ -78,27 +78,3 @@ spec:
       - kind: User
         apiGroup: rbac.authorization.k8s.io
         name: {{ .Name }}
-  - objectTemplate: |
-      apiVersion: networking.istio.io/v1alpha3
-      kind: EnvoyFilter
-      metadata:
-        name: add-header
-        namespace: {{ .Name | lower | replace "." "-" | replace "@" "-" | trimAll "." }}
-      spec:
-        configPatches:
-        - applyTo: VIRTUAL_HOST
-          match:
-            context: SIDECAR_OUTBOUND
-            routeConfiguration:
-              vhost:
-                name: ml-pipeline.kubeflow.svc.cluster.local:8888
-                route:
-                  name: default
-          patch:
-            operation: MERGE
-            value:
-              request_headers_to_add:
-              - append: true
-                header:
-                  key: kubeflow-userid
-                  value: {{ .Name }}
