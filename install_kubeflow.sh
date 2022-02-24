@@ -121,26 +121,29 @@ esac
 
 case "$update_bashrc" in
   y|Y )
+$git=$kubeflow_base_dir/git
+$manifests=$git/kubeflow-ppc64le-manifests
+
 cat >> /root/.bashrc <<EOF
 ###### BEGIN KUBEFLOW ######
 # clusterDomain equals oc get ingresses.config/cluster -o jsonpath={.spec.domain}
 export clusterDomain=apps.$(dnsdomainname)
 export externalIpAddress=$(hostname -i)
 export KUBEFLOW_BASE_DIR=$kubeflow_base_dir
-export GIT=$kubeflow_base_dir/git
-export MANIFESTS=$kubeflow_base_dir/git/kubeflow-ppc64le-manifests
+export GIT=$git
+export MANIFESTS=$manifests
 EOF
 	case "$kubernetes_environment" in
         1 ) # OpenShift
 cat >> /root/.bashrc <<EOF
-export KUBEFLOW_KUSTOMIZE=$kubeflow_base_dir/manifests/overlays/openshift
+export KUBEFLOW_KUSTOMIZE=$manifests/overlays/openshift
 export KUBE_PW=$(cat $(find /root -name "kubeadmin-password"))
 oc login -u kubeadmin -p $KUBE_PW --insecure-skip-tls-verify=true
 EOF
             ;;
         2 ) # k8s
 cat >> /root/.bashrc <<EOF
-export KUBEFLOW_KUSTOMIZE=$kubeflow_base_dir/manifests/overlays/k8s
+export KUBEFLOW_KUSTOMIZE=$manifests/overlays/k8s
 EOF
             ;;
         esac
