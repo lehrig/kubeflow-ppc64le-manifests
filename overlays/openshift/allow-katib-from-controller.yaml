@@ -1,0 +1,39 @@
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: allow-webhooks
+  namespace: kubeflow
+spec:
+  podSelector:
+    matchLabels:
+      katib.kubeflow.org/component: controller
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 8443
+  policyTypes:
+    - Ingress
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: allow-db-manager-from-trials-and-controller
+  namespace: kubeflow
+spec:
+  podSelector:
+    matchLabels:
+      katib.kubeflow.org/component: db-manager
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 6789
+      from:
+        - namespaceSelector:
+            matchLabels:
+              katib.kubeflow.org/metrics-collector-injection: enabled
+        - podSelector:
+            matchLabels:
+              katib.kubeflow.org/component: controller
+  policyTypes:
+    - Ingress
