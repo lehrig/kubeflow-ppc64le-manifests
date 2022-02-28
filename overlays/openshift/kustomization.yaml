@@ -14,6 +14,7 @@ resources:
 #- ../common/istio-1-9/istio-install/base
 - allow-apiserver-webhooks.yaml
 - allow-katib-from-controller.yaml
+- serverless-apis.yaml
 # OIDC Authservice
 # -> Using OpenShift OAuth
 #- ../common/oidc-authservice/base
