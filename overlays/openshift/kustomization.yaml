@@ -15,6 +15,7 @@ resources:
 - allow-apiserver-webhooks.yaml
 - allow-katib-from-controller.yaml
 - serverless-apis.yaml
+- kfserving-patch.yaml
 # OIDC Authservice
 # -> Using OpenShift OAuth
 #- ../common/oidc-authservice/base
