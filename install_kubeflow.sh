@@ -198,9 +198,6 @@ esac
 # cache-deployer and cache-server not supported yet (are optional anyways)
 kubectl delete deployment cache-deployer-deployment cache-server -n kubeflow
 
-# delete all the kfserving components except UI, because they're not ported to Power yet
-oc delete statefulset kfserving-controller-manager -n kubeflow
-
 case "$kubernetes_environment" in
 1 ) # OpenShift
 
