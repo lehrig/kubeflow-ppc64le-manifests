@@ -17,7 +17,7 @@ resources:
 - serverless-apis.yaml
 
 patches:
-- path: kfserving-auth-patch.json
+- path: kfserving-auth-patch.yaml
   target:
     group: security.istio.io
     version: v1beta1

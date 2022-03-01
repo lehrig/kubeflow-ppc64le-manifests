@@ -1,7 +1,0 @@
-[
-  {
-   "op": "replace",
-   "path": "/spec/rules/0/from/0/source",
-   "value": { "namespaces": ["istio-system"] }
-  }
-]
