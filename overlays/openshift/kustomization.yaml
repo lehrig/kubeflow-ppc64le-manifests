@@ -31,3 +31,11 @@ resources:
 # -> Using OpenShift namespace configuration Operator for user onboarding
 #- ../common/user-namespace/base
 - onboarding
+
+patchesStrategicMerge:
+- path: kfserving-auth-patch.yaml
+  target:
+    group: security.istio.io
+    version: v1beta1
+    kind: AuthorizationPolicy
+    name: kfserving-models-web-app
