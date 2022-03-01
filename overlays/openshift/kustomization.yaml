@@ -15,7 +15,15 @@ resources:
 - allow-apiserver-webhooks.yaml
 - allow-katib-from-controller.yaml
 - serverless-apis.yaml
-- kfserving-patch.yaml
+
+patches:
+- path: kfserving-auth-patch.json
+  target:
+    group: security.istio.io
+    version: v1beta1
+    kind: AuthorizationPolicy
+    name: kfserving-models-web-app
+
 # OIDC Authservice
 # -> Using OpenShift OAuth
 #- ../common/oidc-authservice/base
