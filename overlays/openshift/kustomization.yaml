@@ -16,7 +16,7 @@ resources:
 - allow-katib-from-controller.yaml
 - serverless-apis.yaml
 
-patches:
+patchesStrategicMerge:
 - path: kfserving-auth-patch.yaml
   target:
     group: security.istio.io
