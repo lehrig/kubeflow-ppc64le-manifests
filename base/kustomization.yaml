@@ -59,7 +59,12 @@ patchesStrategicMerge:
 - set_memory.yaml
 - workflow-controller-deployment-patch.yaml
 - rewire-images-in-katib-config.yaml
-
+- path: kfserving-auth-patch.yaml
+  target:
+    group: security.istio.io
+    version: v1beta1
+    kind: AuthorizationPolicy
+    name: kfserving-models-web-app
 images:
 - name: gcr.io/ml-pipeline/api-server
   newName: quay.io/ibm/kubeflow-api-server-ppc64le
