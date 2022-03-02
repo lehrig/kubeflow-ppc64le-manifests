@@ -1,6 +1,7 @@
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
+  namespace: kubeflow
   labels:
     kustomize.component: kfserving-models-web-app
     app.kubernetes.io/component: kfserving-models-web-app
