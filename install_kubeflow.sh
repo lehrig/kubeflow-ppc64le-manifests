@@ -17,6 +17,9 @@ ORANGE='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
+clusterDomain=apps.$(dnsdomainname)
+externalIpAddress=$(hostname -i)
+
 echo -e "${BOLD}Which Kubernetes environment do you have admin access to?${NORMAL}
 (1) Red Hat OpenShift
 (2) Vanilla Kubernetes"
@@ -91,6 +94,8 @@ esac
 echo -e "- ${BOLD}Store Docker.io credentials${NORMAL}: ${store_credentials}"
 echo -e "- ${BOLD}Update .bashrc file${NORMAL}: ${update_bashrc}"
 echo -e "- ${BOLD}KUBEFLOW_BASE_DIR${NORMAL}: ${kubeflow_base_dir}"
+echo -e "- ${BOLD}clusterDomain${NORMAL}: ${clusterDomain}"
+echo -e "- ${BOLD}externalIpAddress${NORMAL}: ${externalIpAddress}"
 echo -e "${BOLD}====================================================${NORMAL}"
 read -p "${BOLD}Proceed Kubeflow installation?${NORMAL} [y]: " proceed
 proceed=${proceed:-y}
@@ -127,18 +132,19 @@ manifests=$git/kubeflow-ppc64le-manifests
 cat >> /root/.bashrc <<EOF
 ###### BEGIN KUBEFLOW ######
 # clusterDomain equals oc get ingresses.config/cluster -o jsonpath={.spec.domain}
-export clusterDomain=apps.$(dnsdomainname)
-export externalIpAddress=$(hostname -i)
+export clusterDomain=$clusterDomain
+export externalIpAddress=$externalIpAddress
 export KUBEFLOW_BASE_DIR=$kubeflow_base_dir
 export GIT=$git
 export MANIFESTS=$manifests
 EOF
 	case "$kubernetes_environment" in
         1 ) # OpenShift
+	kube_pw=$(cat $(find /root -name "kubeadmin-password"))
 cat >> /root/.bashrc <<EOF
 export KUBEFLOW_KUSTOMIZE=$manifests/overlays/openshift
-export KUBE_PW=$(cat $(find /root -name "kubeadmin-password"))
-oc login -u kubeadmin -p $KUBE_PW --insecure-skip-tls-verify=true
+export KUBE_PW=$kube_pw
+oc login -u kubeadmin -p $kube_pw --insecure-skip-tls-verify=true
 EOF
             ;;
         2 ) # k8s
