@@ -39,4 +39,6 @@ kustomize build example | yq eval '.. | select(has("image")) | ."image"'
 - base/rewire-images-in-katib-config.yaml
 - base/pipeline-params.env
 - base/workflow-controller-deployment-patch.yaml
+- base/rewire-inference-cm.yaml
 - overlays/k8s/rewire-istio-images.yaml
+
