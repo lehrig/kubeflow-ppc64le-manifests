@@ -1,0 +1,196 @@
+apiVersion: v1
+data:
+  agent: |-
+    {
+        "image" : "kfserving/agent:v0.6.1",
+        "memoryRequest": "100Mi",
+        "memoryLimit": "1Gi",
+        "cpuRequest": "100m",
+        "cpuLimit": "1"
+    }
+  batcher: |-
+    {
+        "image" : "kfserving/agent:v0.6.1",
+        "memoryRequest": "1Gi",
+        "memoryLimit": "1Gi",
+        "cpuRequest": "1",
+        "cpuLimit": "1"
+    }
+  credentials: |-
+    {
+       "gcs": {
+           "gcsCredentialFileName": "gcloud-application-credentials.json"
+       },
+       "s3": {
+           "s3AccessKeyIDName": "AWS_ACCESS_KEY_ID",
+           "s3SecretAccessKeyName": "AWS_SECRET_ACCESS_KEY"
+       }
+    }
+  explainers: |-
+    {
+        "alibi": {
+            "image" : "kfserving/alibi-explainer",
+            "defaultImageVersion": "v0.6.1"
+        },
+        "aix": {
+            "image" : "kfserving/aix-explainer",
+            "defaultImageVersion": "v0.6.1"
+        },
+        "art": {
+            "image" : "kfserving/art-explainer",
+            "defaultImageVersion": "v0.6.1"
+        }
+    }
+  ingress: |-
+    {
+        "ingressGateway" : "kubeflow/kubeflow-gateway",
+        "ingressService" : "istio-ingressgateway.istio-system.svc.cluster.local",
+        "localGateway" : "knative-serving/knative-local-gateway",
+        "localGatewayService" : "knative-local-gateway.istio-system.svc.cluster.local"
+    }
+  logger: |-
+    {
+        "image" : "kfserving/agent:v0.6.1",
+        "memoryRequest": "100Mi",
+        "memoryLimit": "1Gi",
+        "cpuRequest": "100m",
+        "cpuLimit": "1",
+        "defaultUrl": "http://default-broker"
+    }
+  predictors: |-
+    {
+        "tensorflow": {
+            "image": "tensorflow/serving",
+            "defaultImageVersion": "1.14.0",
+            "defaultGpuImageVersion": "1.14.0-gpu",
+            "defaultTimeout": "60",
+            "supportedFrameworks": [
+              "tensorflow"
+            ],
+            "multiModelServer": false
+        },
+        "onnx": {
+            "image": "mcr.microsoft.com/onnxruntime/server",
+            "defaultImageVersion": "v1.0.0",
+            "supportedFrameworks": [
+              "onnx"
+            ],
+            "multiModelServer": false
+        },
+        "sklearn": {
+          "v1": {
+            "image": "kfserving/sklearnserver",
+            "defaultImageVersion": "v0.6.1",
+            "supportedFrameworks": [
+              "sklearn"
+            ],
+            "multiModelServer": true
+          },
+          "v2": {
+            "image": "docker.io/seldonio/mlserver",
+            "defaultImageVersion": "0.2.1",
+            "supportedFrameworks": [
+              "sklearn"
+            ],
+            "multiModelServer": false
+          }
+        },
+        "xgboost": {
+          "v1": {
+            "image": "kfserving/xgbserver",
+            "defaultImageVersion": "v0.6.1",
+            "supportedFrameworks": [
+              "xgboost"
+            ],
+            "multiModelServer": true
+          },
+          "v2": {
+            "image": "docker.io/seldonio/mlserver",
+            "defaultImageVersion": "0.2.1",
+            "supportedFrameworks": [
+              "xgboost"
+            ],
+            "multiModelServer": false
+          }
+        },
+        "pytorch": {
+          "v1" : {
+            "image": "kfserving/pytorchserver",
+            "defaultImageVersion": "v0.6.1",
+            "defaultGpuImageVersion": "v0.6.1-gpu",
+            "supportedFrameworks": [
+              "pytorch"
+            ],
+            "multiModelServer": false
+          },
+          "v2" : {
+            "image": "pytorch/torchserve-kfs",
+            "defaultImageVersion": "0.4.0",
+            "defaultGpuImageVersion": "0.4.0-gpu",
+            "supportedFrameworks": [
+              "pytorch"
+            ],
+            "multiModelServer": false
+          }
+        },
+        "triton": {
+            "image": "nvcr.io/nvidia/tritonserver",
+            "defaultImageVersion": "20.08-py3",
+            "supportedFrameworks": [
+              "tensorrt",
+              "tensorflow",
+              "onnx",
+              "pytorch",
+              "caffe2"
+            ],
+            "multiModelServer": true
+        },
+        "pmml": {
+            "image": "kfserving/pmmlserver",
+            "defaultImageVersion": "v0.6.1",
+            "supportedFrameworks": [
+              "pmml"
+            ],
+            "multiModelServer": false
+        },
+        "lightgbm": {
+            "image": "kfserving/lgbserver",
+            "defaultImageVersion": "v0.6.1",
+            "supportedFrameworks": [
+              "lightgbm"
+            ],
+            "multiModelServer": false
+        },
+        "paddle": {
+            "image": "kfserving/paddleserver",
+            "defaultImageVersion": "v0.6.1",
+            "supportedFrameworks": [
+              "paddle"
+            ],
+            "multiModelServer": false
+        }
+    }
+  storageInitializer: |-
+    {
+        "image" : "kfserving/storage-initializer:v0.6.1",
+        "memoryRequest": "100Mi",
+        "memoryLimit": "1Gi",
+        "cpuRequest": "100m",
+        "cpuLimit": "1"
+    }
+  transformers: |-
+    {
+    }
+kind: ConfigMap
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","data":{"agent":"{\n    \"image\" : \"kfserving/agent:v0.6.1\",\n    \"memoryRequest\": \"100Mi\",\n    \"memoryLimit\": \"1Gi\",\n    \"cpuRequest\": \"100m\",\n    \"cpuLimit\": \"1\"\n}","batcher":"{\n    \"image\" : \"kfserving/agent:v0.6.1\",\n    \"memoryRequest\": \"1Gi\",\n    \"memoryLimit\": \"1Gi\",\n    \"cpuRequest\": \"1\",\n    \"cpuLimit\": \"1\"\n}","credentials":"{\n   \"gcs\": {\n       \"gcsCredentialFileName\": \"gcloud-application-credentials.json\"\n   },\n   \"s3\": {\n       \"s3AccessKeyIDName\": \"AWS_ACCESS_KEY_ID\",\n       \"s3SecretAccessKeyName\": \"AWS_SECRET_ACCESS_KEY\"\n   }\n}","explainers":"{\n    \"alibi\": {\n        \"image\" : \"kfserving/alibi-explainer\",\n        \"defaultImageVersion\": \"v0.6.1\"\n    },\n    \"aix\": {\n        \"image\" : \"kfserving/aix-explainer\",\n        \"defaultImageVersion\": \"v0.6.1\"\n    },\n    \"art\": {\n        \"image\" : \"kfserving/art-explainer\",\n        \"defaultImageVersion\": \"v0.6.1\"\n    }\n}","ingress":"{\n    \"ingressGateway\" : \"kubeflow/kubeflow-gateway\",\n    \"ingressService\" : \"istio-ingressgateway.istio-system.svc.cluster.local\",\n    \"localGateway\" : \"knative-serving/knative-local-gateway\",\n    \"localGatewayService\" : \"knative-local-gateway.istio-system.svc.cluster.local\"\n}","logger":"{\n    \"image\" : \"kfserving/agent:v0.6.1\",\n    \"memoryRequest\": \"100Mi\",\n    \"memoryLimit\": \"1Gi\",\n    \"cpuRequest\": \"100m\",\n    \"cpuLimit\": \"1\",\n    \"defaultUrl\": \"http://default-broker\"\n}","predictors":"{\n    \"tensorflow\": {\n        \"image\": \"tensorflow/serving\",\n        \"defaultImageVersion\": \"1.14.0\",\n        \"defaultGpuImageVersion\": \"1.14.0-gpu\",\n        \"defaultTimeout\": \"60\",\n        \"supportedFrameworks\": [\n          \"tensorflow\"\n        ],\n        \"multiModelServer\": false\n    },\n    \"onnx\": {\n        \"image\": \"mcr.microsoft.com/onnxruntime/server\",\n        \"defaultImageVersion\": \"v1.0.0\",\n        \"supportedFrameworks\": [\n          \"onnx\"\n        ],\n        \"multiModelServer\": false\n    },\n    \"sklearn\": {\n      \"v1\": {\n        \"image\": \"kfserving/sklearnserver\",\n        \"defaultImageVersion\": \"v0.6.1\",\n        \"supportedFrameworks\": [\n          \"sklearn\"\n        ],\n        \"multiModelServer\": true\n      },\n      \"v2\": {\n        \"image\": \"docker.io/seldonio/mlserver\",\n        \"defaultImageVersion\": \"0.2.1\",\n        \"supportedFrameworks\": [\n          \"sklearn\"\n        ],\n        \"multiModelServer\": false\n      }\n    },\n    \"xgboost\": {\n      \"v1\": {\n        \"image\": \"kfserving/xgbserver\",\n        \"defaultImageVersion\": \"v0.6.1\",\n        \"supportedFrameworks\": [\n          \"xgboost\"\n        ],\n        \"multiModelServer\": true\n      },\n      \"v2\": {\n        \"image\": \"docker.io/seldonio/mlserver\",\n        \"defaultImageVersion\": \"0.2.1\",\n        \"supportedFrameworks\": [\n          \"xgboost\"\n        ],\n        \"multiModelServer\": false\n      }\n    },\n    \"pytorch\": {\n      \"v1\" : {\n        \"image\": \"kfserving/pytorchserver\",\n        \"defaultImageVersion\": \"v0.6.1\",\n        \"defaultGpuImageVersion\": \"v0.6.1-gpu\",\n        \"supportedFrameworks\": [\n          \"pytorch\"\n        ],\n        \"multiModelServer\": false\n      },\n      \"v2\" : {\n        \"image\": \"pytorch/torchserve-kfs\",\n        \"defaultImageVersion\": \"0.4.0\",\n        \"defaultGpuImageVersion\": \"0.4.0-gpu\",\n        \"supportedFrameworks\": [\n          \"pytorch\"\n        ],\n        \"multiModelServer\": false\n      }\n    },\n    \"triton\": {\n        \"image\": \"nvcr.io/nvidia/tritonserver\",\n        \"defaultImageVersion\": \"20.08-py3\",\n        \"supportedFrameworks\": [\n          \"tensorrt\",\n          \"tensorflow\",\n          \"onnx\",\n          \"pytorch\",\n          \"caffe2\"\n        ],\n        \"multiModelServer\": true\n    },\n    \"pmml\": {\n        \"image\": \"kfserving/pmmlserver\",\n        \"defaultImageVersion\": \"v0.6.1\",\n        \"supportedFrameworks\": [\n          \"pmml\"\n        ],\n        \"multiModelServer\": false\n    },\n    \"lightgbm\": {\n        \"image\": \"kfserving/lgbserver\",\n        \"defaultImageVersion\": \"v0.6.1\",\n        \"supportedFrameworks\": [\n          \"lightgbm\"\n        ],\n        \"multiModelServer\": false\n    },\n    \"paddle\": {\n        \"image\": \"kfserving/paddleserver\",\n        \"defaultImageVersion\": \"v0.6.1\",\n        \"supportedFrameworks\": [\n          \"paddle\"\n        ],\n        \"multiModelServer\": false\n    }\n}","storageInitializer":"{\n    \"image\" : \"kfserving/storage-initializer:v0.6.1\",\n    \"memoryRequest\": \"100Mi\",\n    \"memoryLimit\": \"1Gi\",\n    \"cpuRequest\": \"100m\",\n    \"cpuLimit\": \"1\"\n}","transformers":"{\n}"},"kind":"ConfigMap","metadata":{"annotations":{},"labels":{"app":"kfserving","app.kubernetes.io/name":"kfserving"},"name":"inferenceservice-config","namespace":"kubeflow"}}
+  creationTimestamp: "2022-03-03T10:30:06Z"
+  labels:
+    app: kfserving
+    app.kubernetes.io/name: kfserving
+  name: inferenceservice-config
+  namespace: kubeflow
+  resourceVersion: "8197660"
+  uid: 2eaf6974-9f9c-44f6-8d77-26ed24c98c3d
