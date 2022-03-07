@@ -17,8 +17,6 @@ ORANGE='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-externalIpAddress=$(hostname -i)
-
 echo -e "${BOLD}Which Kubernetes environment do you have admin access to?${NORMAL}
 (1) Red Hat OpenShift
 (2) Vanilla Kubernetes"
@@ -39,6 +37,7 @@ case "$kubernetes_environment" in
       esac
       ;;
   2 ) kubernetes_environment_name="Vanilla Kubernetes";;
+      externalIpAddress=$(hostname -i)
   * ) echo -e "invalid - exiting"; return;;
 esac
 
@@ -90,12 +89,12 @@ echo -e "- ${BOLD}Install OpenShift Operators${NORMAL}: ${install_operators}"
 echo -e "- ${BOLD}clusterDomain${NORMAL}: ${clusterDomain}"
 ;;
 2 ) # k8s
+echo -e "- ${BOLD}externalIpAddress${NORMAL}: ${externalIpAddress}"
 ;;
 esac
 echo -e "- ${BOLD}Store Docker.io credentials${NORMAL}: ${store_credentials}"
 echo -e "- ${BOLD}Update .bashrc file${NORMAL}: ${update_bashrc}"
 echo -e "- ${BOLD}KUBEFLOW_BASE_DIR${NORMAL}: ${kubeflow_base_dir}"
-echo -e "- ${BOLD}externalIpAddress${NORMAL}: ${externalIpAddress}"
 echo -e "${BOLD}====================================================${NORMAL}"
 read -p "${BOLD}Proceed Kubeflow installation?${NORMAL} [y]: " proceed
 proceed=${proceed:-y}
@@ -132,7 +131,6 @@ manifests=$git/kubeflow-ppc64le-manifests
 cat >> /root/.bashrc <<EOF
 ###### BEGIN KUBEFLOW ######
 # clusterDomain equals oc get ingresses.config/cluster -o jsonpath={.spec.domain}
-export externalIpAddress=$externalIpAddress
 export KUBEFLOW_BASE_DIR=$kubeflow_base_dir
 export GIT=$git
 export MANIFESTS=$manifests
@@ -149,6 +147,7 @@ EOF
             ;;
         2 ) # k8s
 cat >> /root/.bashrc <<EOF
+export externalIpAddress=$externalIpAddress
 export KUBEFLOW_KUSTOMIZE=$manifests/overlays/k8s
 EOF
             ;;
