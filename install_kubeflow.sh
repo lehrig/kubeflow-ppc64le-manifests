@@ -17,7 +17,6 @@ ORANGE='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-clusterDomain=apps.$(dnsdomainname)
 externalIpAddress=$(hostname -i)
 
 echo -e "${BOLD}Which Kubernetes environment do you have admin access to?${NORMAL}
@@ -28,7 +27,8 @@ kubernetes_environment=${kubernetes_environment:-1}
 case "$kubernetes_environment" in 
   1 ) kubernetes_environment_name="Red Hat OpenShift"
       alias docker="podman"
-
+      
+      clusterDomain=$(oc get ingresses.config/cluster -o jsonpath={.spec.domain} | cut -d '.' -f2-)
       echo -e ""
       read -p "${BOLD}Install OpenShift operators (Cert-Manager, Service Mesh (incl. Elasticsearch, Kiali, Jaeger), Namespace-Configuration)?${NORMAL} [y]: " install_operators
       install_operators=${install_operators:-y}
@@ -87,6 +87,7 @@ echo -e "- ${BOLD}Kubernetes environment${NORMAL}: ${kubernetes_environment_name
 case "$kubernetes_environment" in
 1 ) # OpenShift
 echo -e "- ${BOLD}Install OpenShift Operators${NORMAL}: ${install_operators}"
+echo -e "- ${BOLD}clusterDomain${NORMAL}: ${clusterDomain}"
 ;;
 2 ) # k8s
 ;;
@@ -94,7 +95,6 @@ esac
 echo -e "- ${BOLD}Store Docker.io credentials${NORMAL}: ${store_credentials}"
 echo -e "- ${BOLD}Update .bashrc file${NORMAL}: ${update_bashrc}"
 echo -e "- ${BOLD}KUBEFLOW_BASE_DIR${NORMAL}: ${kubeflow_base_dir}"
-echo -e "- ${BOLD}clusterDomain${NORMAL}: ${clusterDomain}"
 echo -e "- ${BOLD}externalIpAddress${NORMAL}: ${externalIpAddress}"
 echo -e "${BOLD}====================================================${NORMAL}"
 read -p "${BOLD}Proceed Kubeflow installation?${NORMAL} [y]: " proceed
@@ -132,7 +132,6 @@ manifests=$git/kubeflow-ppc64le-manifests
 cat >> /root/.bashrc <<EOF
 ###### BEGIN KUBEFLOW ######
 # clusterDomain equals oc get ingresses.config/cluster -o jsonpath={.spec.domain}
-export clusterDomain=$clusterDomain
 export externalIpAddress=$externalIpAddress
 export KUBEFLOW_BASE_DIR=$kubeflow_base_dir
 export GIT=$git
@@ -142,6 +141,7 @@ EOF
         1 ) # OpenShift
 	kube_pw=$(cat $(find /root -name "kubeadmin-password"))
 cat >> /root/.bashrc <<EOF
+export clusterDomain=$clusterDomain
 export KUBEFLOW_KUSTOMIZE=$manifests/overlays/openshift
 export KUBE_PW=$kube_pw
 oc login -u kubeadmin -p $kube_pw --insecure-skip-tls-verify=true
