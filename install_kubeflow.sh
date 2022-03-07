@@ -36,8 +36,8 @@ case "$kubernetes_environment" in
         * ) echo -e "invalid - exiting"; return;;
       esac
       ;;
-  2 ) kubernetes_environment_name="Vanilla Kubernetes";;
-      externalIpAddress=$(hostname -i)
+  2 ) kubernetes_environment_name="Vanilla Kubernetes"
+      externalIpAddress=$(hostname -i);;
   * ) echo -e "invalid - exiting"; return;;
 esac
 
