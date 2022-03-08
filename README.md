@@ -6,6 +6,20 @@ These manifests base on the [official Kubeflow manifests](http://www.github.com/
 - Red Hat OpenShift v4.5-v4.8 on ppc64le
 - Vanilla Kubernetes v1.17-v1.21 on ppc64le
 
+### Pre-Requisites for Vanilla Kubernetes
+Ensure that your ```kube-apiserver``` is initialized with settings for certificates to work, e.g.:
+```
+service-account-issuer: kubernetes.default.svc,
+service-account-signing-key-file: /etc/kubernetes/ssl/sa.key
+```
+(see https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/)
+
+Depending on your k8s distributions, paths can be different, e.g., for minikube set:
+```
+--extra-config=apiserver.service-account-signing-key-file=/var/lib/minikube/certs/sa.key
+--extra-config=apiserver.service-account-issuer=kubernetes.default.svc 
+```
+
 ## Supported Kubeflow Versions
 Please select appropriate tag:
 - v1.3.0
