@@ -26,7 +26,7 @@ case "$kubernetes_environment" in
   1 ) kubernetes_environment_name="Red Hat OpenShift"
       alias docker="podman"
       
-      clusterDomain=$(oc get ingresses.config/cluster -o jsonpath={.spec.domain} | cut -d '.' -f2-)
+      clusterDomain=$(oc get ingresses.config/cluster -o jsonpath={.spec.domain})
       echo -e ""
       read -p "${BOLD}Install OpenShift operators (Cert-Manager, Service Mesh (incl. Elasticsearch, Kiali, Jaeger), Namespace-Configuration)?${NORMAL} [y]: " install_operators
       install_operators=${install_operators:-y}
