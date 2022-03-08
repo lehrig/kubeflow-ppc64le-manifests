@@ -16,6 +16,8 @@ service-account-signing-key-file: /etc/kubernetes/ssl/sa.key
 
 Note that applying these settings depends on how you install the k8s cluster (e.g., kubeadmin/kubespray/minikube). Also the path for the signing key file may be different for you. For example, when initializing a cluster with minikube, these parameters may do the trick:
 ```
+minikube start
+...
 --extra-config=apiserver.service-account-issuer=kubernetes.default.svc 
 --extra-config=apiserver.service-account-signing-key-file=/var/lib/minikube/certs/sa.key
 ```
