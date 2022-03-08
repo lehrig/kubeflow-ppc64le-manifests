@@ -20,6 +20,16 @@ Note that applying these settings depends on how you install the k8s cluster (e.
 --extra-config=apiserver.service-account-signing-key-file=/var/lib/minikube/certs/sa.key
 ```
 
+In kubespray, you would instead modify ```kube_kubeadm_apiserver_extra_args```, e.g., like so:
+```
+cat << EOF >> roles/kubernetes/master/defaults/main/main.yml
+kube_kubeadm_apiserver_extra_args: {
+  service-account-issuer: kubernetes.default.svc,
+  service-account-signing-key-file: /etc/kubernetes/ssl/sa.key
+}
+EOF
+```
+
 ## Supported Kubeflow Versions
 Please select appropriate tag:
 - v1.3.0
