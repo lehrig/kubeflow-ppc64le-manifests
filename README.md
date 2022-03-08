@@ -12,12 +12,12 @@ Ensure that your ```kube-apiserver``` is initialized with settings for certifica
 service-account-issuer: kubernetes.default.svc,
 service-account-signing-key-file: /etc/kubernetes/ssl/sa.key
 ```
-(see https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/)
+(see https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#service-account-token-volume-projection)
 
-Depending on your k8s distributions, paths can be different, e.g., for minikube set:
+Note that applying these settings depends on how you install the k8s cluster (e.g., kubeadmin/kubespray/minikube). Also the path for the signing key file may be different for you. For example, when initializing a cluster with minikube, these parameters may do the trick:
 ```
---extra-config=apiserver.service-account-signing-key-file=/var/lib/minikube/certs/sa.key
 --extra-config=apiserver.service-account-issuer=kubernetes.default.svc 
+--extra-config=apiserver.service-account-signing-key-file=/var/lib/minikube/certs/sa.key
 ```
 
 ## Supported Kubeflow Versions
