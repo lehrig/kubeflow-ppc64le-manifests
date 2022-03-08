@@ -14,7 +14,10 @@ service-account-signing-key-file: /etc/kubernetes/ssl/sa.key
 ```
 (see https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#service-account-token-volume-projection)
 
-Note that applying these settings depends on how you install the k8s cluster (e.g., kubeadmin/kubespray/minikube). Also the path for the signing key file may be different for you. For example, when initializing a cluster with minikube, these parameters may do the trick:
+Note that applying these settings depends on how you install the k8s cluster (e.g., kubeadmin/kubespray/minikube). Also the path for the signing key file may be different for you.
+
+#### minikube
+When initializing a cluster with minikube, these parameters may do the trick:
 ```
 minikube start
 ...
@@ -22,7 +25,8 @@ minikube start
 --extra-config=apiserver.service-account-signing-key-file=/var/lib/minikube/certs/sa.key
 ```
 
-In kubespray, you would instead modify ```kube_kubeadm_apiserver_extra_args```, e.g., like so:
+#### Kubespray
+In Kubespray, modify ```kube_kubeadm_apiserver_extra_args```, e.g., like so:
 ```
 cat << EOF >> roles/kubernetes/master/defaults/main/main.yml
 kube_kubeadm_apiserver_extra_args: {
@@ -31,6 +35,9 @@ kube_kubeadm_apiserver_extra_args: {
 }
 EOF
 ```
+
+#### kubeadm
+See: https://docs.nginx.com/nginx-service-mesh/get-started/kubernetes-platform/kubeadm/ for initializing or patching your existing cluster.
 
 ## Supported Kubeflow Versions
 Please select appropriate tag:
