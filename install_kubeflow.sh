@@ -28,7 +28,7 @@ case "$kubernetes_environment" in
       
       clusterDomain=$(oc get ingresses.config/cluster -o jsonpath={.spec.domain})
       echo -e ""
-      read -p "${BOLD}Install OpenShift operators (Cert-Manager, Service Mesh (incl. Elasticsearch, Kiali, Jaeger), Namespace-Configuration)?${NORMAL} [y]: " install_operators
+      read -p "${BOLD}Install OpenShift operators (Cert-Manager, Service Mesh (incl. Elasticsearch, Kiali, Jaeger), Namespace-Configuration, Serverless, Node Feature Discovery)?${NORMAL} [y]: " install_operators
       install_operators=${install_operators:-y}
       case "$install_operators" in
         y|Y ) ;;
@@ -42,7 +42,7 @@ case "$kubernetes_environment" in
 esac
 
 echo -e ""
-read -p "${BOLD}To avoid toomanyrequests errors for Docker.io, do you want to store your Docker.io credentials?${NORMAL} [y]:" store_credentials
+read -p "${BOLD}To avoid toomanyrequests errors for Docker.io, do you want to store your Docker.io credentials?${NORMAL} [y]: " store_credentials
 store_credentials=${store_credentials:-y}
 case "$store_credentials" in 
   y|Y ) while true; do
@@ -176,16 +176,19 @@ case "$install_operators" in
         oc apply -f https://github.com/jetstack/cert-manager/releases/download/v1.5.4/cert-manager.yaml
 
         # Install subscriptions (operators from OperatorHub)
-        while ! oc kustomize $KUBEFLOW_KUSTOMIZE/subscriptions | oc apply --kustomize $KUBEFLOW_KUSTOMIZE/subscriptions; do echo -e "Retrying to apply resources"; sleep 10; done
+        while ! oc kustomize $KUBEFLOW_KUSTOMIZE/subscriptions | oc apply --kustomize $KUBEFLOW_KUSTOMIZE/subscriptions; do echo -e "Retrying to apply resources for Cert Manager..."; sleep 10; done
+
+        # Configure node feature discovery
+        while ! oc kustomize $KUBEFLOW_KUSTOMIZE/nfd | oc apply --kustomize $KUBEFLOW_KUSTOMIZE/nfd; do echo -e "Retrying to apply resources for Node Feature Discovery..."; sleep 10; done
         ;;
   * ) ;;
 esac
 
 # Configure service mesh
-while ! oc kustomize $KUBEFLOW_KUSTOMIZE/servicemesh | oc apply --kustomize $KUBEFLOW_KUSTOMIZE/servicemesh; do echo -e "Retrying to apply resources"; sleep 10; done
+while ! oc kustomize $KUBEFLOW_KUSTOMIZE/servicemesh | oc apply --kustomize $KUBEFLOW_KUSTOMIZE/servicemesh; do echo -e "Retrying to apply resources for Service Mesh..."; sleep 10; done
 
 # Deploy Kubeflow
-while ! oc kustomize $KUBEFLOW_KUSTOMIZE | oc apply --kustomize $KUBEFLOW_KUSTOMIZE; do echo -e "Retrying to apply resources"; sleep 10; done
+while ! oc kustomize $KUBEFLOW_KUSTOMIZE | oc apply --kustomize $KUBEFLOW_KUSTOMIZE; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
 
 oc project kubeflow
 #############################################
@@ -193,7 +196,7 @@ oc project kubeflow
 2 ) # k8s
 
 # Deploy Kubeflow
-while ! kubectl kustomize $KUBEFLOW_KUSTOMIZE | kubectl apply --kustomize $KUBEFLOW_KUSTOMIZE; do echo -e "Retrying to apply resources"; sleep 10; done
+while ! kubectl kustomize $KUBEFLOW_KUSTOMIZE | kubectl apply --kustomize $KUBEFLOW_KUSTOMIZE; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
 ;;
 esac
 

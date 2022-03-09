@@ -1,9 +1,14 @@
-kind: Namespace
 apiVersion: v1
+kind: Namespace
 metadata:
   name: openshift-operators-redhat
 ---
-kind: Namespace
 apiVersion: v1
+kind: Namespace
 metadata:
   name: namespace-configuration-operator
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: openshift-nfd
