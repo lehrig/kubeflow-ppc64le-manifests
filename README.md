@@ -6,6 +6,12 @@ These manifests base on the [official Kubeflow manifests](http://www.github.com/
 - Red Hat OpenShift v4.5-v4.8 on ppc64le
 - Vanilla Kubernetes v1.17-v1.21 on ppc64le
 
+## Supported Kubeflow Versions
+Please select appropriate tag:
+- main (v1.5.0 preview)
+- v1.4.1
+- v1.3.0
+
 ### Pre-Requisites for Vanilla Kubernetes
 Ensure that your ```kube-apiserver``` is initialized with settings for certificates to work, e.g.:
 ```
@@ -39,21 +45,16 @@ EOF
 #### kubeadm
 See: https://docs.nginx.com/nginx-service-mesh/get-started/kubernetes-platform/kubeadm/ for initializing or patching your existing cluster.
 
-## Supported Kubeflow Versions
-Please select appropriate tag:
-- v1.3.0
-- main (v1.4.1 preview)
-
 ## Install
 ```
-# select [main|v1.3.0]
+# select [main|v1.4.1|v1.3.0]
 KUBEFLOW_VERSION=main
 wget https://raw.githubusercontent.com/lehrig/kubeflow-ppc64le-manifests/${KUBEFLOW_VERSION}/install_kubeflow.sh
 source install_kubeflow.sh
 ```
 ## Uninstall
 ```
-# select [main|v1.3.0]
+# select [main|v1.4.1|v1.3.0]
 KUBEFLOW_VERSION=main
 wget https://raw.githubusercontent.com/lehrig/kubeflow-ppc64le-manifests/${KUBEFLOW_VERSION}/uninstall_kubeflow.sh
 source uninstall_kubeflow.sh
