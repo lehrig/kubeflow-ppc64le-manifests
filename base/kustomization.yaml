@@ -3,42 +3,43 @@ kind: Kustomization
 
 resources:
 # Kubeflow namespace
-- https://github.com/kubeflow/manifests/common/kubeflow-namespace/base?ref=v1.4.1
+- https://github.com/kubeflow/manifests/common/kubeflow-namespace/base?ref=v1.5.0
 # Kubeflow Roles
-- https://github.com/kubeflow/manifests/common/kubeflow-roles/base?ref=v1.4.1
+- https://github.com/kubeflow/manifests/common/kubeflow-roles/base?ref=v1.5.0
 # Kubeflow Istio Resources
-- https://github.com/kubeflow/manifests/common/istio-1-9/kubeflow-istio-resources/base?ref=v1.4.1
+- https://github.com/kubeflow/manifests/common/istio-1-11/kubeflow-istio-resources/base?ref=v1.5.0
 
 # Kubeflow Pipelines
-- https://github.com/kubeflow/manifests/apps/pipeline/upstream/env/platform-agnostic-multi-user-emissary?ref=v1.4.1
+- https://github.com/kubeflow/manifests/apps/pipeline/upstream/env/platform-agnostic-multi-user-emissary?ref=v1.5.0
 # KNative
-# - https://github.com/kubeflow/manifests/common/knative/knative-serving/overlays/gateways?ref=v1.4.1
-# - https://github.com/kubeflow/manifests/common/knative/knative-eventing/base?ref=v1.4.1
-- https://github.com/kubeflow/manifests/common/istio-1-9/cluster-local-gateway/base?ref=v1.4.1
+# - https://github.com/kubeflow/manifests/common/knative/knative-serving/overlays/gateways?ref=v1.5.0
+# - https://github.com/kubeflow/manifests/common/knative/knative-eventing/base?ref=v1.5.0
+- https://github.com/kubeflow/manifests/common/istio-1-9/cluster-local-gateway/base?ref=v1.5.0
 # KFServing
-- https://github.com/kubeflow/manifests/apps/kfserving/upstream/overlays/kubeflow?ref=v1.4.1
+- https://github.com/kubeflow/manifests/apps/kfserving/upstream/overlays/kubeflow?ref=v1.5.0
 # Katib
-- https://github.com/kubeflow/manifests/apps/katib/upstream/installs/katib-with-kubeflow?ref=v1.4.1
+- https://github.com/kubeflow/manifests/apps/katib/upstream/installs/katib-with-kubeflow?ref=v1.5.0
 # Central Dashboard
-- https://github.com/kubeflow/manifests/apps/centraldashboard/upstream/overlays/istio?ref=v1.4.1
+- https://github.com/kubeflow/manifests/apps/centraldashboard/upstream/overlays/kserve?ref=v1.5.0
 # Admission Webhook
-- https://github.com/kubeflow/manifests/apps/admission-webhook/upstream/overlays/cert-manager?ref=v1.4.1
+- https://github.com/kubeflow/manifests/apps/admission-webhook/upstream/overlays/cert-manager?ref=v1.5.0
 # Notebook Controller
-- https://github.com/kubeflow/manifests/apps/jupyter/jupyter-web-app/upstream/overlays/istio?ref=v1.4.1
+- https://github.com/kubeflow/manifests/apps/jupyter/jupyter-web-app/upstream/overlays/istio?ref=v1.5.0
 # Jupyter Web App
-- https://github.com/kubeflow/manifests/apps/jupyter/notebook-controller/upstream/overlays/kubeflow?ref=v1.4.1
+- https://github.com/kubeflow/manifests/apps/jupyter/notebook-controller/upstream/overlays/kubeflow?ref=v1.5.0
 # Profiles + KFAM
-- https://github.com/kubeflow/manifests/apps/profiles/upstream/overlays/kubeflow?ref=v1.4.1
+- https://github.com/kubeflow/manifests/apps/profiles/upstream/overlays/kubeflow?ref=v1.5.0
 # Volumes Web App
-- https://github.com/kubeflow/manifests/apps/volumes-web-app/upstream/overlays/istio?ref=v1.4.1
+- https://github.com/kubeflow/manifests/apps/volumes-web-app/upstream/overlays/istio?ref=v1.5.0
 # Tensorboards Web App
-- https://github.com/kubeflow/manifests/apps/tensorboard/tensorboard-controller/upstream/overlays/kubeflow?ref=v1.4.1
+- https://github.com/kubeflow/manifests/apps/tensorboard/tensorboard-controller/upstream/overlays/kubeflow?ref=v1.5.0
 # Tensorboard Controller
-- https://github.com/kubeflow/manifests/apps/tensorboard/tensorboards-web-app/upstream/overlays/istio?ref=v1.4.1
+- https://github.com/kubeflow/manifests/apps/tensorboard/tensorboards-web-app/upstream/overlays/istio?ref=v1.5.0
 # Training Operator
-- https://github.com/kubeflow/manifests/apps/training-operator/upstream/overlays/kubeflow?ref=v1.4.1
-# MPI Operator
-- https://github.com/kubeflow/manifests/apps/mpi-job/upstream/overlays/kubeflow?ref=v1.4.1
+- https://github.com/kubeflow/manifests/apps/training-operator/upstream/overlays/kubeflow?ref=v1.5.0
+# KServe
+- https://github.com/kubeflow/manifests/contrib/kserve/kserve?ref=v1.5.0
+- https://github.com/kubeflow/manifests/contrib/kserve/models-web-app/overlays/kubeflow?ref=v1.5.0
 
 configMapGenerator:
   - name: pipeline-install-config
@@ -64,31 +65,31 @@ patchesStrategicMerge:
 images:
 - name: gcr.io/ml-pipeline/api-server
   newName: quay.io/ibm/kubeflow-api-server-ppc64le
-  newTag: 1.7.0
+  newTag: 1.8.1
 - name: gcr.io/ml-pipeline/persistenceagent
   newName: quay.io/ibm/kubeflow-persistenceagent-ppc64le
-  newTag: 1.7.0
+  newTag: 1.8.1
 - name: gcr.io/ml-pipeline/scheduledworkflow
   newName: quay.io/ibm/kubeflow-scheduledworkflow-ppc64le
-  newTag: 1.7.0
+  newTag: 1.8.1
 - name: gcr.io/ml-pipeline/frontend
   newName: quay.io/ibm/kubeflow-frontend-ppc64le
-  newTag: 1.7.0
+  newTag: 1.8.1
 - name: gcr.io/ml-pipeline/viewer-crd-controller
   newName: quay.io/ibm/kubeflow-viewer-crd-controller-ppc64le
-  newTag: 1.7.0
+  newTag: 1.8.1
 - name: gcr.io/ml-pipeline/visualization-server
   newName: quay.io/ibm/kubeflow-visualization-server-ppc64le
-  newTag: 1.7.0
+  newTag: 1.8.1
 - name: gcr.io/ml-pipeline/metadata-writer
   newName: quay.io/ibm/kubeflow-metadata-writer-ppc64le
-  newTag: 1.7.0
+  newTag: 1.8.1
 - name: gcr.io/ml-pipeline/cache-deployer
   newName: quay.io/ibm/kubeflow-cache-deployer-ppc64le
-  newTag: 1.7.0
+  newTag: 1.8.1
 - name: gcr.io/ml-pipeline/cache-server
   newName: quay.io/ibm/kubeflow-cache-server-ppc64le
-  newTag: 1.7.0
+  newTag: 1.8.1
 - name: gcr.io/ml-pipeline/minio
   newName: quay.io/ibm/kubeflow-minio-ppc64le
   newTag: RELEASE.2019-04-09T01-22-30Z.1
@@ -98,78 +99,78 @@ images:
 - name: python
   newName: registry.access.redhat.com/ubi8/python-38
   newTag: 1-75
-- name: metacontroller/metacontroller:v0.3.0
+- name: docker.io/metacontrollerio/metacontroller
   newName: quay.io/ibm/kubeflow-metacontroller-ppc64le
-  newTag: v0.3.0
+  newTag: v2.0.4
 - name: gcr.io/tfx-oss-public/ml_metadata_store_server
   newName: quay.io/ibm/kubeflow-ml_metadata_store_server-ppc64le
-  newTag: 1.0.0
+  newTag: 1.5.0
 - name: gcr.io/ml-pipeline/metadata-envoy
   newName: quay.io/ibm/kubeflow-metadata-envoy-ppc64le
-  newTag: 1.7.0 
+  newTag: 1.8.1 
 - name: gcr.io/ml-pipeline/workflow-controller
   newName: quay.io/ibm/kubeflow-workflow-controller-ppc64le
-  newTag: v3.1.6
+  newTag: v3.2.3
 - name: gcr.io/ml-pipeline/argoexec
   newName: quay.io/ibm/kubeflow-argoexec-ppc64le
-  newTag: v3.1.6
+  newTag: v3.2.3
 - name: gcr.io/ml-pipeline/application-crd-controller
   newName: quay.io/ibm/kubeflow-application-crd-controller-ppc64le
   newTag: 1.0-beta-non-cluster-role
+- name: kfserving/models-web-app 
+  newName: quay.io/ibm/kfserving-models-web-app-ppc64le
+  newTag: v0.6.1
 - name: docker.io/kubeflowkatib/katib-controller
-  newName: quay.io/mgiessing/katib-controller
-  newTag: v0.12.0
+  newName: quay.io/ibm/katib-controller-ppc64le
+  newTag: v0.13.0
 - name: docker.io/kubeflowkatib/katib-db-manager
-  newName: quay.io/mgiessing/katib-db-manager
-  newTag: v0.12.0
+  newName: quay.io/ibm/katib-db-manager-ppc64le
+  newTag: v0.13.0
 - name: docker.io/kubeflowkatib/katib-ui
-  newName: quay.io/mgiessing/katib-ui
-  newTag: v0.12.0
+  newName: quay.io/ibm/katib-ui-ppc64le
+  newTag: v0.13.0
 - name: mysql
   newName: quay.io/ibm/kubeflow-mariadb-ppc64le
   newTag: 10.2.19
 - name: public.ecr.aws/j1r0q0g6/notebooks/central-dashboard
   newName: quay.io/ibm/kubeflow-central-dashboard-ppc64le
-  newTag: v1.4.0
+  newTag: v1.5.0
 - name: public.ecr.aws/j1r0q0g6/notebooks/admission-webhook
   newName: quay.io/ibm/kubeflow-admission-webhook-ppc64le
-  newTag: v1.4.0
+  newTag: v1.5.0
 - name: public.ecr.aws/j1r0q0g6/notebooks/jupyter-web-app
   newName: quay.io/ibm/kubeflow-jupyter-web-app-ppc64le
-  newTag: v1.4.0
+  newTag: v1.5.0
 - name: quay.io/kubeflow/tf-notebook-image
   newName: quay.io/ibm/kubeflow-notebook-image-ppc64le
   newTag: tensorflow-1.15.4-cpu-py3.6
 - name: public.ecr.aws/j1r0q0g6/notebooks/notebook-controller
   newName: quay.io/ibm/kubeflow-notebook-controller-ppc64le
-  newTag: v1.4.0
+  newTag: v1.5.0
 - name: public.ecr.aws/j1r0q0g6/notebooks/access-management
   newName: quay.io/ibm/kubeflow-access-management-ppc64le
-  newTag: v1.4.0
+  newTag: v1.5.0
 - name: public.ecr.aws/j1r0q0g6/notebooks/profile-controller
   newName: quay.io/ibm/kubeflow-profile-controller-ppc64le
-  newTag: v1.4.0
+  newTag: v1.5.0
 - name: public.ecr.aws/j1r0q0g6/notebooks/volumes-web-app
   newName: quay.io/ibm/kubeflow-volumes-web-app-ppc64le
-  newTag: v1.4.0
+  newTag: v1.5.0
 - name: public.ecr.aws/j1r0q0g6/notebooks/tensorboard-controller
   newName: quay.io/ibm/kubeflow-tensorboard-controller-ppc64le
-  newTag: v1.4.0
+  newTag: v1.5.0
 - name: public.ecr.aws/j1r0q0g6/notebooks/tensorboards-web-app
   newName: quay.io/ibm/kubeflow-tensorboards-web-app-ppc64le
-  newTag: v1.4.0
+  newTag: v1.5.0
 - name: gcr.io/kubebuilder/kube-rbac-proxy
   newName: quay.io/brancz/kube-rbac-proxy
   newTag: v0.6.0-ppc64le
 - name: public.ecr.aws/j1r0q0g6/training/training-operator
   newName: quay.io/ibm/kubeflow-training-operator-ppc64le
-  newTag: 760ac1171dd30039a7363ffa03c77454bd714da5
-- name: mpioperator/mpi-operator
-  newName: quay.io/ibm/kubeflow-mpi-operator-ppc64le
-  newTag: v0.3.0
-- name: kfserving/models-web-app
-  newName: quay.io/mgiessing/models-web-app
-  newTag: v0.6.1
-- name: kfserving/kfserving-controller
-  newName: quay.io/mgiessing/kfserving-controller
-  newTag: v0.6.1
+  newTag: 174e8813666951ded505daf334a37f60fd50c18d
+- name: kserve/kserve-controller
+  newName: quay.io/ibm/kserve-kserve-controller-ppc64le
+  newTag: v0.7.0
+- name: kserve/models-web-app
+  newName: quay.io/ibm/kserve-models-web-app-ppc64le
+  newTag: v0.7.0

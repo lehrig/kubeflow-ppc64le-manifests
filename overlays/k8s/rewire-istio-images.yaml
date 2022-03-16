@@ -8,7 +8,7 @@ spec:
     spec:
       containers:
         - name: istio-proxy
-          image: "quay.io/ibm/istio-proxyv2-ppc64le:1.9.2"
+          image: "quay.io/ibm/istio-proxyv2-ppc64le:1.11.4"
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -16,15 +16,12 @@ metadata:
   name: istio-sidecar-injector
   namespace: istio-system
 data:
+  
   values: |-
     {
       "global": {
-        "arch": {
-          "amd64": 2,
-          "ppc64le": 2,
-          "s390x": 2
-        },
         "caAddress": "",
+        "configCluster": false,
         "configValidation": true,
         "defaultNodeSelector": {},
         "defaultPodDisruptionBudget": {
@@ -37,7 +34,7 @@ data:
         },
         "enabled": true,
         "externalIstiod": false,
-        "hub": "docker.io/istio",
+        "hub": "quay.io/ibm",
         "imagePullPolicy": "",
         "imagePullSecrets": [],
         "istioNamespace": "istio-system",
@@ -72,7 +69,7 @@ data:
           "excludeInboundPorts": "",
           "excludeOutboundPorts": "",
           "holdApplicationUntilProxyStarts": false,
-          "image": "quay.io/ibm/istio-proxyv2-ppc64le:1.9.2",
+          "image": "quay.io/ibm/istio-proxyv2-ppc64le:1.11.4",
           "includeIPRanges": "*",
           "logLevel": "warning",
           "privileged": false,
@@ -85,15 +82,15 @@ data:
               "memory": "1024Mi"
             },
             "requests": {
-              "cpu": "100m",
-              "memory": "128Mi"
+              "cpu": "10m",
+              "memory": "40Mi"
             }
           },
           "statusPort": 15020,
           "tracer": "zipkin"
         },
         "proxy_init": {
-                "image": "quay.io/ibm/istio-proxyv2-ppc64le:1.9.2",
+          "image": "quay.io/ibm/istio-proxyv2-ppc64le:1.11.4",
           "resources": {
             "limits": {
               "cpu": "2000m",
@@ -114,7 +111,7 @@ data:
         "sts": {
           "servicePort": 0
         },
-        "tag": "1.9.2",
+        "tag": "1.11.4",
         "tracer": {
           "datadog": {
             "address": "$(HOST_IP):8126"
@@ -133,7 +130,6 @@ data:
             "address": ""
           }
         },
-        "trustDomain": "",
         "useMCP": false
       },
       "istio_cni": {
@@ -151,7 +147,6 @@ data:
           "enabled": true
         },
         "rewriteAppHTTPProbe": true,
-        "templates": {},
-        "useLegacySelectors": true
+        "templates": {}
       }
     }
