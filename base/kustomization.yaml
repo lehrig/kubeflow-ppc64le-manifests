@@ -117,6 +117,9 @@ images:
 - name: gcr.io/ml-pipeline/application-crd-controller
   newName: quay.io/ibm/kubeflow-application-crd-controller-ppc64le
   newTag: 1.0-beta-non-cluster-role
+- name: kfserving/kfserving-controller
+  newName: quay.io/ibm/kfserving-controller-ppc64le
+  newTag: v0.6.1
 - name: kfserving/models-web-app 
   newName: quay.io/ibm/kfserving-models-web-app-ppc64le
   newTag: v0.6.1
@@ -169,7 +172,7 @@ images:
   newName: quay.io/ibm/kubeflow-training-operator-ppc64le
   newTag: 174e8813666951ded505daf334a37f60fd50c18d
 - name: kserve/kserve-controller
-  newName: quay.io/ibm/kserve-kserve-controller-ppc64le
+  newName: quay.io/ibm/kserve-controller-ppc64le
   newTag: v0.7.0
 - name: kserve/models-web-app
   newName: quay.io/ibm/kserve-models-web-app-ppc64le
