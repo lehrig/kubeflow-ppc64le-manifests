@@ -11,4 +11,4 @@ spec:
     termination: reencrypt
   to:
     kind: Service
-    name: kubeflow 
+    name: istio-ingressgateway 

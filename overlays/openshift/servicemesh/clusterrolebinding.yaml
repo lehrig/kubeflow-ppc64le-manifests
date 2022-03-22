@@ -5,7 +5,7 @@ metadata:
 subjects:
 - kind: ServiceAccount
   namespace: istio-system
-  name: kubeflow-service-account
+  name: istio-ingressgateway-service-account
 roleRef:
   kind: ClusterRole
   name: grafana

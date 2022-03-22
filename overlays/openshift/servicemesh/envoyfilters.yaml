@@ -6,7 +6,7 @@ spec:
   workloadSelector:
     labels:
       istio: ingressgateway
-      maistra.io/gateway: kubeflow.istio-system
+      maistra.io/gateway: istio-ingressgateway.istio-system
   configPatches:
   - applyTo: HTTP_FILTER # http connection manager is a filter in Envoy
     match:
