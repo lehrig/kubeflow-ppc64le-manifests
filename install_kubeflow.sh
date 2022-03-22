@@ -7,7 +7,12 @@
 
 ###########################################################################################################################
 # 1. Prerequisites
-kubeflow_version="v1.5.0"
+if [ -z "$KUBEFLOW_VERSION" ]
+then
+      kubeflow_version="main"
+else
+      kubeflow_version=$KUBEFLOW_VERSION
+fi
 
 BOLD=$(tput bold)
 NORMAL=$(tput sgr0)
