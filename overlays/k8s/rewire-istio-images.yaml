@@ -69,7 +69,7 @@ data:
           "excludeInboundPorts": "",
           "excludeOutboundPorts": "",
           "holdApplicationUntilProxyStarts": false,
-          "image": "quay.io/ibm/istio-proxyv2-ppc64le:1.11.4",
+          "image": "quay.io/ibm/istio-proxyv2-ppc64le:1.9.2",
           "includeIPRanges": "*",
           "logLevel": "warning",
           "privileged": false,
