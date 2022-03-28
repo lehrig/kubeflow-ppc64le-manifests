@@ -216,7 +216,7 @@ esac
 
 # Ensure instio is up and side-cars are injected into kubeflow namespace afterwards (by restarting pods)
 kubectl wait --for=condition=available --timeout=600s deployment/istiod -n istio-system
-kubectl delete pod --all -n istio-system
+kubectl delete pod --all -n kubeflow
 kubectl delete pod --all -n kubeflow-user-example-com
 kubectl wait --for=condition=available --timeout=600s deployment/centraldashboard -n kubeflow
 
