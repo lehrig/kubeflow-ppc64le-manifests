@@ -211,14 +211,14 @@ oc project kubeflow
 
 # Deploy Kubeflow
 while ! kubectl kustomize $KUBEFLOW_KUSTOMIZE | kubectl apply --kustomize $KUBEFLOW_KUSTOMIZE; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
-;;
-esac
 
 # Ensure instio is up and side-cars are injected into kubeflow namespace afterwards (by restarting pods)
 kubectl wait --for=condition=available --timeout=600s deployment/istiod -n istio-system
 kubectl delete pod --all -n kubeflow
 kubectl delete pod --all -n kubeflow-user-example-com
 kubectl wait --for=condition=available --timeout=600s deployment/centraldashboard -n kubeflow
+;;
+esac
 
 ###########################################################################################################################
 # 4. Post-installation cleanup & configuration
