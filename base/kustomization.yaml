@@ -12,8 +12,6 @@ resources:
 # Kubeflow Pipelines
 - https://github.com/kubeflow/manifests/apps/pipeline/upstream/env/platform-agnostic-multi-user-emissary?ref=v1.5.0
 # KNative
-# - https://github.com/kubeflow/manifests/common/knative/knative-serving/overlays/gateways?ref=v1.5.0
-# - https://github.com/kubeflow/manifests/common/knative/knative-eventing/base?ref=v1.5.0
 - https://github.com/kubeflow/manifests/common/istio-1-9/cluster-local-gateway/base?ref=v1.5.0
 # KFServing
 - https://github.com/kubeflow/manifests/apps/kfserving/upstream/overlays/kubeflow?ref=v1.5.0

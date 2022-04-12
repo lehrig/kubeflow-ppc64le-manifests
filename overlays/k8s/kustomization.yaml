@@ -14,6 +14,9 @@ resources:
 - https://github.com/kubeflow/manifests/common/oidc-authservice/base?ref=v1.5.0
 # Dex
 - https://github.com/kubeflow/manifests/common/dex/overlays/istio?ref=v1.5.0
+# KNative
+- https://github.com/kubeflow/manifests/common/knative/knative-serving/overlays/gateways?ref=v1.5.0
+- https://github.com/kubeflow/manifests/common/knative/knative-eventing/base?ref=v1.5.0
 
 # User namespace
 - https://github.com/kubeflow/manifests/common/user-namespace/base?ref=v1.5.0
