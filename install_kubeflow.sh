@@ -247,9 +247,6 @@ oc create secret generic htpass-secret \
   -n openshift-config
 oc apply -f $KUBEFLOW_KUSTOMIZE/servicemesh/htpasswd-oauth.yaml
 
-# Expose minio
-oc expose service -n kubeflow minio-service
-
 # Get UI address
 # TODO: Get rid of insecure routes
 export KUBEFLOW_URL=$(oc get routes -n istio-system secure-kubeflow -o jsonpath='http://{.spec.host}/')
