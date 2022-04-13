@@ -119,9 +119,12 @@ case "$store_credentials" in
             oc set data secret/pull-secret -n openshift-config --from-file=.dockerconfigjson=dockerconfig.json
             rm -f dockerconfig.json
 	    ;;
-        2 ) # Add docker.io as imagePullSecret to default serviceaccount 
+        2 ) # Add docker.io as imagePullSecret to default and default-editor serviceaccounts  
             kubectl create secret docker-registry myregistrykey --docker-server=docker.io --docker-username=$docker_user --docker-password=$docker_pass
             kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "myregistrykey"}]}'
+	    
+	    kubectl create secret docker-registry myregistrykey -n kubeflow-user-example-com --docker-server=docker.io --docker-username=$docker_user --docker-password=$docker_pass
+	    kubectl patch serviceaccount default-editor -n kubeflow-user-example-com -p '{"imagePullSecrets": [{"name": "myregistrykey"}]}'
             ;;
         esac 	 
         ;;
