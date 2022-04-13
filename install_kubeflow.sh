@@ -119,12 +119,9 @@ case "$store_credentials" in
             oc set data secret/pull-secret -n openshift-config --from-file=.dockerconfigjson=dockerconfig.json
             rm -f dockerconfig.json
 	    ;;
-        2 ) # Add docker.io as imagePullSecret to default and default-editor serviceaccounts  
+        2 ) # Add docker.io as imagePullSecret to default serviceaccount  
             kubectl create secret docker-registry myregistrykey --docker-server=docker.io --docker-username=$docker_user --docker-password=$docker_pass
             kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "myregistrykey"}]}'
-	    
-	    kubectl create secret docker-registry myregistrykey -n kubeflow-user-example-com --docker-server=docker.io --docker-username=$docker_user --docker-password=$docker_pass
-	    kubectl patch serviceaccount default-editor -n kubeflow-user-example-com -p '{"imagePullSecrets": [{"name": "myregistrykey"}]}'
             ;;
         esac 	 
         ;;
@@ -255,6 +252,18 @@ oc apply -f $KUBEFLOW_KUSTOMIZE/servicemesh/htpasswd-oauth.yaml
 export KUBEFLOW_URL=$(oc get routes -n istio-system secure-kubeflow -o jsonpath='http://{.spec.host}/')
 ;;
 2 ) # k8s
+
+# Add docker.io as imagePullSecret to default-editor serviceaccount 
+case "$store_credentials" in 
+  y|Y ) kubectl create secret docker-registry myregistrykey --docker-server=docker.io --docker-username=$docker_user --docker-password=$docker_pass
+        kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "myregistrykey"}]}'
+	
+	kubectl create secret docker-registry myregistrykey -n kubeflow-user-example-com --docker-server=docker.io --docker-username=$docker_user --docker-password=$docker_pass
+	kubectl patch serviceaccount default-editor -n kubeflow-user-example-com -p '{"imagePullSecrets": [{"name": "myregistrykey"}]}'
+        ;;
+  * ) ;;
+esac
+
 # Get UI address
 # see: https://istio.io/latest/docs/tasks/traffic-management/ingress/ingress-control/
 export HTTPS_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
