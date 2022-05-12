@@ -17,14 +17,14 @@
 spawnerFormDefaults:
   image:
     # The container Image for the user's Jupyter Notebook
-    value: quay.io/ibm/kubeflow-notebook-image-ppc64le:elyra3.7.0-py3.8-tensorflow-cpu2.7.0
+    value: quay.io/ibm/kubeflow-notebook-image-ppc64le:elyra3.8.0-py3.8-tensorflow-cpu2.7.0
     # The list of available standard container Images
     options:
-    - quay.io/ibm/kubeflow-notebook-image-ppc64le:elyra3.7.0-py3.8-tensorflow-cpu2.7.0
-    - quay.io/ibm/kubeflow-notebook-image-ppc64le:elyra3.7.0-py3.8-tensorflow-gpu2.7.0
-    - quay.io/ibm/kubeflow-notebook-image-ppc64le:elyra3.7.0-py3.8-scipy
-    - quay.io/ibm/kubeflow-notebook-image-ppc64le:elyra3.7.0-py3.8-min
-    - quay.io/ibm/kubeflow-notebook-image-ppc64le:elyra3.7.0-py3.8-base
+    - quay.io/ibm/kubeflow-notebook-image-ppc64le:elyra3.8.0-py3.8-tensorflow-cpu2.7.0
+    - quay.io/ibm/kubeflow-notebook-image-ppc64le:elyra3.8.0-py3.8-tensorflow-gpu2.7.0
+    - quay.io/ibm/kubeflow-notebook-image-ppc64le:elyra3.8.0-py3.8-scipy
+    - quay.io/ibm/kubeflow-notebook-image-ppc64le:elyra3.8.0-py3.8-min
+    - quay.io/ibm/kubeflow-notebook-image-ppc64le:elyra3.8.0-py3.8-base
     #- public.ecr.aws/j1r0q0g6/notebooks/notebook-servers/jupyter-scipy:v1.5.0
     #- public.ecr.aws/j1r0q0g6/notebooks/notebook-servers/jupyter-pytorch-full:v1.5.0
     #- public.ecr.aws/j1r0q0g6/notebooks/notebook-servers/jupyter-pytorch-cuda-full:v1.5.0
