@@ -185,4 +185,5 @@ spawnerFormDefaults:
     #   - default-editor
     value:
       - access-ml-pipeline
+      - add-minio-secret
     readOnly: false
