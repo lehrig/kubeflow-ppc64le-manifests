@@ -57,6 +57,7 @@ configMapGenerator:
 patchesStrategicMerge:
 - set_memory.yaml
 - workflow-controller-deployment-patch.yaml
+- training-operator-deployment-patch.yaml
 - rewire-images-in-katib-config.yaml
 - rewire-inference-cm.yaml
 

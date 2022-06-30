@@ -1,0 +1,12 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: training-operator
+spec:
+  template:
+    spec:
+      containers:
+        - name: training-operator
+          command:
+            - /manager
+            - --mpi-kubectl-delivery-image=quay.io/ibm/mpioperator-kubectl-delivery:174e881
