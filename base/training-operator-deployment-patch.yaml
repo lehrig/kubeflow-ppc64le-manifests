@@ -9,4 +9,4 @@ spec:
         - name: training-operator
           command:
             - /manager
-            - --mpi-kubectl-delivery-image=quay.io/ibm/mpioperator-kubectl-delivery:174e881
+            - --mpi-kubectl-delivery-image=quay.io/ibm/mpioperator-kubectl-delivery:v0.3.0
