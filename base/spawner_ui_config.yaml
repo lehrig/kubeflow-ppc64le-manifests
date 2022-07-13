@@ -22,6 +22,8 @@ spawnerFormDefaults:
     options:
     - quay.io/ibm/kubeflow-notebook-image-ppc64le:elyra3.8.0-py3.8-tensorflow-cpu2.7.0
     - quay.io/ibm/kubeflow-notebook-image-ppc64le:elyra3.8.0-py3.8-tensorflow-gpu2.7.0
+    - quay.io/ibm/kubeflow-notebook-image-ppc64le:elyra3.9.1-py3.8-pytorch-cpu1.10.2
+    - quay.io/ibm/kubeflow-notebook-image-ppc64le:elyra3.9.1-py3.8-pytorch-gpu1.10.2
     - quay.io/ibm/kubeflow-notebook-image-ppc64le:elyra3.8.0-py3.8-scipy
     - quay.io/ibm/kubeflow-notebook-image-ppc64le:elyra3.8.0-py3.8-min
     - quay.io/ibm/kubeflow-notebook-image-ppc64le:elyra3.8.0-py3.8-base
