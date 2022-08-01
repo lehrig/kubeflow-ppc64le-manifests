@@ -61,3 +61,25 @@ spec:
   env:
     - name: KF_PIPELINES_SA_TOKEN_PATH
       value: /var/run/secrets/kubeflow/pipelines/token
+---
+apiVersion: kubeflow.org/v1alpha1
+kind: PodDefault
+metadata:
+  name: add-minio-secret
+  namespace: kubeflow-user-example-com
+spec:
+  desc: Allows to access to MinIO, an S3-based object store installed in your Kubeflow cluster
+  selector:
+    matchLabels:
+      add-minio-secret: "true"
+  env:
+    - name: MINIO_ID
+      valueFrom:
+        secretKeyRef:
+          name: mlpipeline-minio-artifact
+          key: accesskey
+    - name: MINIO_PWD
+      valueFrom:
+        secretKeyRef:
+          name: mlpipeline-minio-artifact
+          key: secretkey
