@@ -63,7 +63,7 @@ source uninstall_kubeflow.sh
 ## Release
 1. Get relevant image updates from [official Kubeflow manifests](http://www.github.com/kubeflow/manifests/):
 ```
-kustomize build example | yq eval '.. | select(has("image")) | ."image"'
+kubectl kustomize example | yq eval '.. | select(has("image")) | ."image"'
 ```
 2. Update these files accordingly:
 - base/kustomization.yaml
