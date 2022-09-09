@@ -210,6 +210,9 @@ oc project kubeflow
 2 ) # k8s
 
 # Deploy Kubeflow
+echo "Deploy Kubeflow..."
+echo "Currently in $(pwd) and using this command:"
+echo "while ! kubectl kustomize $KUBEFLOW_KUSTOMIZE | kubectl apply --kustomize $KUBEFLOW_KUSTOMIZE; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done"
 while ! kubectl kustomize $KUBEFLOW_KUSTOMIZE | kubectl apply --kustomize $KUBEFLOW_KUSTOMIZE; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
 
 # Ensure instio is up and side-cars are injected into kubeflow namespace afterwards (by restarting pods)
