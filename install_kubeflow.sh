@@ -200,6 +200,10 @@ while ! oc kustomize $KUBEFLOW_KUSTOMIZE/servicemesh | oc apply --kustomize $KUB
 oc wait --for=condition=available --timeout=600s deployment/istiod-kubeflow -n istio-system
 
 # Deploy Kubeflow
+echo "Deploy Kubeflow..."
+echo "Currently in $(pwd) and using this command:"
+echo "while ! oc kustomize $KUBEFLOW_KUSTOMIZE | oc apply --kustomize $KUBEFLOW_KUSTOMIZE; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done"
+
 while ! oc kustomize $KUBEFLOW_KUSTOMIZE | oc apply --kustomize $KUBEFLOW_KUSTOMIZE; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
 
 oc wait --for=condition=available --timeout=600s deployment/centraldashboard -n kubeflow
