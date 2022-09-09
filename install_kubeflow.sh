@@ -187,10 +187,10 @@ case "$install_operators" in
         while ! oc kustomize $KUBEFLOW_KUSTOMIZE/nfd | oc apply --kustomize $KUBEFLOW_KUSTOMIZE/nfd; do echo -e "Retrying to apply resources for Node Feature Discovery..."; sleep 10; done
 
         # Install GPU operator
-        oc new-project gpu-operator
-        git clone -b ppc64le_v1.9.0 https://github.com/mgiessing/gpu-operator.git $GIT/gpu-operator
-        sed -i 's/use_ocp_driver_toolkit: false/use_ocp_driver_toolkit: true/g' $GIT/gpu-operator/deployments/gpu-operator/values.yaml
-        helm install --wait --generate-name $GIT/gpu-operator/deployments/gpu-operator
+        #oc new-project gpu-operator
+        #git clone -b ppc64le_v1.10.1 https://github.com/mgiessing/gpu-operator.git $GIT/gpu-operator
+        #sed -i 's/use_ocp_driver_toolkit: false/use_ocp_driver_toolkit: true/g' $GIT/gpu-operator/deployments/gpu-operator/values.yaml
+        #helm install --wait --generate-name $GIT/gpu-operator/deployments/gpu-operator
         ;;
   * ) ;;
 esac

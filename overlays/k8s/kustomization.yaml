@@ -4,22 +4,22 @@ kind: Kustomization
 resources:
 - ../../base
 # Cert-Manager
-- https://github.com/kubeflow/manifests/common/cert-manager/cert-manager/base?ref=v1.5.0
-- https://github.com/kubeflow/manifests/common/cert-manager/kubeflow-issuer/base?ref=v1.5.0
+- https://github.com/kubeflow/manifests/common/cert-manager/cert-manager/base?ref=v1.6.0
+- https://github.com/kubeflow/manifests/common/cert-manager/kubeflow-issuer/base?ref=v1.6.0
 # Istio
-- https://github.com/kubeflow/manifests/common/istio-1-11/istio-crds/base?ref=v1.5.0
-- https://github.com/kubeflow/manifests/common/istio-1-11/istio-namespace/base?ref=v1.5.0
-- https://github.com/kubeflow/manifests/common/istio-1-11/istio-install/base?ref=v1.5.0
+- https://github.com/kubeflow/manifests/common/istio-1-14/istio-crds/base?ref=v1.6.0
+- https://github.com/kubeflow/manifests/common/istio-1-14/istio-namespace/base?ref=v1.6.0
+- https://github.com/kubeflow/manifests/common/istio-1-14/istio-install/base?ref=v1.6.0
 # OIDC Authservice
-- https://github.com/kubeflow/manifests/common/oidc-authservice/base?ref=v1.5.0
+- https://github.com/kubeflow/manifests/common/oidc-authservice/base?ref=v1.6.0
 # Dex
-- https://github.com/kubeflow/manifests/common/dex/overlays/istio?ref=v1.5.0
+- https://github.com/kubeflow/manifests/common/dex/overlays/istio?ref=v1.6.0
 # KNative
-- https://github.com/kubeflow/manifests/common/knative/knative-serving/overlays/gateways?ref=v1.5.0
-- https://github.com/kubeflow/manifests/common/knative/knative-eventing/base?ref=v1.5.0
+- https://github.com/kubeflow/manifests/common/knative/knative-serving/overlays/gateways?ref=v1.6.0
+- https://github.com/kubeflow/manifests/common/knative/knative-eventing/base?ref=v1.6.0
 
 # User namespace
-- https://github.com/kubeflow/manifests/common/user-namespace/base?ref=v1.5.0
+- https://github.com/kubeflow/manifests/common/user-namespace/base?ref=v1.6.0
 - onboarding
 
 # HTTPS
@@ -56,14 +56,14 @@ images:
   newName: quay.io/jetstack/cert-manager-cainjector-ppc64le
   newTag: v1.5.0
 - name: docker.io/istio/proxyv2
-  newName: quay.io/ibm/istio-proxyv2-ppc64le
-  newTag: 1.9.2
+  newName: quay.io/mgiessing/proxyv2
+  newTag: 1.14.1
 - name: docker.io/istio/pilot
-  newName: quay.io/ibm/istio-pilot-ppc64le
-  newTag: 1.9.2
+  newName: quay.io/mgiessing/pilot
+  newTag: 1.14.1
 - name: gcr.io/arrikto/kubeflow/oidc-authservice
   newName: quay.io/ibm/kubeflow-oidc-authservice-ppc64le
   newTag: 28c59ef
 - name: quay.io/dexidp/dex
   newName: quay.io/ibm/kubeflow-dex-ppc64le
-  newTag: v2.24.0
+  newTag: v2.32.1
