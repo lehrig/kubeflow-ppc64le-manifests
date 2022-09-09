@@ -166,7 +166,7 @@ EOF
 esac
 
 # Get manifests
-git clone --branch $kubeflow_version https://github.com/lehrig/kubeflow-ppc64le-manifests.git $MANIFESTS
+git clone --branch $kubeflow_version https://github.com/mgiessing/kubeflow-ppc64le-manifests.git $MANIFESTS
 
 ###########################################################################################################################
 # 3. Installation
