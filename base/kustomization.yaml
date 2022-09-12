@@ -167,7 +167,7 @@ images:
 - name: gcr.io/kubebuilder/kube-rbac-proxy
   newName: quay.io/brancz/kube-rbac-proxy
   newTag: v0.8.0-ppc64le
-- name: docker.io/kubeflow/training-operator
+- name: kubeflow/training-operator
   newName: quay.io/ibm/kubeflow-training-operator-ppc64le
   newTag: v1.5.0
 - name: kserve/kserve-controller
