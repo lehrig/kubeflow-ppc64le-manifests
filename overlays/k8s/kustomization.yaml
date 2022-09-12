@@ -56,7 +56,7 @@ images:
   newName: quay.io/jetstack/cert-manager-cainjector-ppc64le
   newTag: v1.5.0
 - name: docker.io/istio/proxyv2
-  newName: quay.io/ibm/istio-proxyv2-ppc64l-ppc64lee
+  newName: quay.io/ibm/istio-proxyv2-ppc64le
   newTag: 1.14.1-dev
 - name: gcr.io/arrikto/istio/pilot
   newName: quay.io/ibm/istio-pilot-ppc64le
