@@ -58,7 +58,7 @@ images:
 - name: docker.io/istio/proxyv2
   newName: quay.io/mgiessing/proxyv2
   newTag: 1.14.1
-- name: docker.io/istio/pilot
+- name: gcr.io/arrikto/istio/pilot
   newName: quay.io/mgiessing/pilot
   newTag: 1.14.1
 - name: gcr.io/arrikto/kubeflow/oidc-authservice
