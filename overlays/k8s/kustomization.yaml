@@ -57,7 +57,7 @@ images:
   newTag: v1.5.0
 - name: docker.io/istio/proxyv2
   newName: quay.io/mgiessing/proxyv2
-  newTag: 1.14.1
+  newTag: 1.14.1-dev
 - name: gcr.io/arrikto/istio/pilot
   newName: quay.io/mgiessing/pilot
   newTag: 1.14.1
