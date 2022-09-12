@@ -55,11 +55,11 @@ configMapGenerator:
     - sync.py
 
 patchesStrategicMerge:
-  #- set_memory.yaml
+- set_memory.yaml
 - workflow-controller-deployment-patch.yaml
 - training-operator-deployment-patch.yaml
 - rewire-images-in-katib-config.yaml
-  #- rewire-inference-cm.yaml
+- rewire-inference-cm.yaml
 
 images:
 - name: gcr.io/ml-pipeline/api-server
@@ -167,9 +167,9 @@ images:
 - name: gcr.io/kubebuilder/kube-rbac-proxy
   newName: quay.io/brancz/kube-rbac-proxy
   newTag: v0.8.0-ppc64le
-- name: public.ecr.aws/j1r0q0g6/training/training-operator
+- name: docker.io/kubeflow/training-operator
   newName: quay.io/ibm/kubeflow-training-operator-ppc64le
-  newTag: 174e8813666951ded505daf334a37f60fd50c18d
+  newTag: v1.5.0
 - name: kserve/kserve-controller
   newName: quay.io/ibm/kserve-controller-ppc64le
   newTag: v0.8.0
