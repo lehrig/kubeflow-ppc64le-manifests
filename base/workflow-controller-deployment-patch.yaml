@@ -11,4 +11,4 @@ spec:
             - --configmap
             - workflow-controller-configmap
             - --executor-image
-            - quay.io/ibm/kubeflow-argoexec-ppc64le:v3.2.3
+            - quay.io/ibm/kubeflow-argoexec-ppc64le:v3.3.8

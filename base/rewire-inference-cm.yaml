@@ -2,7 +2,7 @@ apiVersion: v1
 data:
   agent: |-
     {
-        "image" : "quay.io/mgiessing/agent:v0.7.0",
+        "image" : "quay.io/mgiessing/agent:v0.8.0",
         "memoryRequest": "100Mi",
         "memoryLimit": "1Gi",
         "cpuRequest": "100m",
@@ -10,7 +10,7 @@ data:
     }
   batcher: |-
     {
-        "image" : "quay.io/mgiessing/agent:v0.7.0",
+        "image" : "quay.io/mgiessing/agent:v0.8.0",
         "memoryRequest": "1Gi",
         "memoryLimit": "1Gi",
         "cpuRequest": "1",
@@ -34,15 +34,15 @@ data:
     {
         "alibi": {
             "image" : "quay.io/mgiessing/alibi-explainer",
-            "defaultImageVersion": "v0.7.0"
+            "defaultImageVersion": "v0.8.0"
         },
         "aix": {
             "image" : "quay.io/mgiessing/aix-explainer",
-            "defaultImageVersion": "v0.7.0"
+            "defaultImageVersion": "v0.8.0"
         },
         "art": {
             "image" : "quay.io/mgiessing/art-explainer",
-            "defaultImageVersion": "v0.7.0"
+            "defaultImageVersion": "v0.8.0"
         }
     }
   ingress: |-
@@ -55,7 +55,7 @@ data:
     }
   logger: |-
     {
-        "image" : "quay.io/mgiessing/agent:v0.7.0",
+        "image" : "quay.io/mgiessing/agent:v0.8.0",
         "memoryRequest": "100Mi",
         "memoryLimit": "1Gi",
         "cpuRequest": "100m",
@@ -85,7 +85,7 @@ data:
         "sklearn": {
           "v1": {
             "image": "quay.io/mgiessing/sklearnserver",
-            "defaultImageVersion": "v0.7.0",
+            "defaultImageVersion": "v0.8.0",
             "supportedFrameworks": [
               "sklearn"
             ],
@@ -103,7 +103,7 @@ data:
         "xgboost": {
           "v1": {
             "image": "quay.io/mgiessing/xgbserver",
-            "defaultImageVersion": "v0.7.0",
+            "defaultImageVersion": "v0.8.0",
             "supportedFrameworks": [
               "xgboost"
             ],
@@ -121,8 +121,8 @@ data:
         "pytorch": {
           "v1" : {
             "image": "quay.io/mgiessing/pytorchserver",
-            "defaultImageVersion": "v0.7.0",
-            "defaultGpuImageVersion": "v0.7.0-gpu",
+            "defaultImageVersion": "v0.8.0",
+            "defaultGpuImageVersion": "v0.8.0-gpu",
             "supportedFrameworks": [
               "pytorch"
             ],
@@ -130,8 +130,8 @@ data:
           },
           "v2" : {
             "image": "quay.io/mgiessing/torchserve-kfs",
-            "defaultImageVersion": "0.4.1",
-            "defaultGpuImageVersion": "0.4.1-gpu",
+            "defaultImageVersion": "0.6.0",
+            "defaultGpuImageVersion": "0.6.0-gpu",
             "supportedFrameworks": [
               "pytorch"
             ],
@@ -151,7 +151,7 @@ data:
         },
         "pmml": {
             "image": "quay.io/mgiessing/pmmlserver",
-            "defaultImageVersion": "v0.7.0",
+            "defaultImageVersion": "v0.8.0",
             "supportedFrameworks": [
               "pmml"
             ],
@@ -159,7 +159,7 @@ data:
         },
         "lightgbm": {
             "image": "quay.io/mgiessing/lgbserver",
-            "defaultImageVersion": "v0.7.0",
+            "defaultImageVersion": "v0.8.0",
             "supportedFrameworks": [
               "lightgbm"
             ],
@@ -167,7 +167,7 @@ data:
         },
         "paddle": {
             "image": "quay.io/mgiessing/paddleserver",
-            "defaultImageVersion": "v0.7.0",
+            "defaultImageVersion": "v0.8.0",
             "supportedFrameworks": [
               "paddle"
             ],
@@ -176,195 +176,7 @@ data:
     }
   storageInitializer: |-
     {
-        "image" : "quay.io/mgiessing/storage-initializer:v0.7.0",
-        "memoryRequest": "100Mi",
-        "memoryLimit": "1Gi",
-        "cpuRequest": "100m",
-        "cpuLimit": "1"
-    }
-  transformers: |-
-    {
-    }
-kind: ConfigMap
-metadata:
-  name: inferenceservice-config
-  namespace: kserve
----
-apiVersion: v1
-data:
-  agent: |-
-    {
-        "image" : "quay.io/mgiessing/agent:v0.6.1",
-        "memoryRequest": "100Mi",
-        "memoryLimit": "1Gi",
-        "cpuRequest": "100m",
-        "cpuLimit": "1"
-    }
-  batcher: |-
-    {
-        "image" : "quay.io/mgiessing/agent:v0.6.1",
-        "memoryRequest": "1Gi",
-        "memoryLimit": "1Gi",
-        "cpuRequest": "1",
-        "cpuLimit": "1"
-    }
-  credentials: |-
-    {
-       "gcs": {
-           "gcsCredentialFileName": "gcloud-application-credentials.json"
-       },
-       "s3": {
-           "s3AccessKeyIDName": "AWS_ACCESS_KEY_ID",
-           "s3SecretAccessKeyName": "AWS_SECRET_ACCESS_KEY"
-       }
-    }
-  explainers: |-
-    {
-        "alibi": {
-            "image" : "quay.io/mgiessing/alibi-explainer",
-            "defaultImageVersion": "v0.6.1"
-        },
-        "aix": {
-            "image" : "quay.io/mgiessing/aix-explainer",
-            "defaultImageVersion": "v0.6.1"
-        },
-        "art": {
-            "image" : "quay.io/mgiessing/art-explainer",
-            "defaultImageVersion": "v0.6.1"
-        }
-    }
-  ingress: |-
-    {
-        "ingressGateway" : "knative-serving/knative-ingress-gateway",
-        "ingressService" : "istio-ingressgateway.istio-system.svc.cluster.local",
-        "localGateway" : "knative-serving/knative-local-gateway",
-        "localGatewayService" : "knative-local-gateway.istio-system.svc.cluster.local"
-    }
-  logger: |-
-    {
-        "image" : "quay.io/mgiessing/agent:v0.6.1",
-        "memoryRequest": "100Mi",
-        "memoryLimit": "1Gi",
-        "cpuRequest": "100m",
-        "cpuLimit": "1",
-        "defaultUrl": "http://default-broker"
-    }
-  predictors: |-
-    {
-        "tensorflow": {
-            "image": "quay.io/mgiessing/tfserver",
-            "defaultImageVersion": "1.14.0",
-            "defaultGpuImageVersion": "1.14.0-gpu",
-            "defaultTimeout": "60",
-            "supportedFrameworks": [
-              "tensorflow"
-            ],
-            "multiModelServer": false
-        },
-        "onnx": {
-            "image": "quay.io/mgiessing/onnxserver",
-            "defaultImageVersion": "v1.0.0",
-            "supportedFrameworks": [
-              "onnx"
-            ],
-            "multiModelServer": false
-        },
-        "sklearn": {
-          "v1": {
-            "image": "quay.io/mgiessing/sklearnserver",
-            "defaultImageVersion": "v0.6.1",
-            "supportedFrameworks": [
-              "sklearn"
-            ],
-            "multiModelServer": true
-          },
-          "v2": {
-            "image": "quay.io/mgiessing/mlserver",
-            "defaultImageVersion": "0.2.1",
-            "supportedFrameworks": [
-              "sklearn"
-            ],
-            "multiModelServer": false
-          }
-        },
-        "xgboost": {
-          "v1": {
-            "image": "quay.io/mgiessing/xgbserver",
-            "defaultImageVersion": "v0.6.1",
-            "supportedFrameworks": [
-              "xgboost"
-            ],
-            "multiModelServer": true
-          },
-          "v2": {
-            "image": "quay.io/mgiessing/mlserver",
-            "defaultImageVersion": "0.2.1",
-            "supportedFrameworks": [
-              "xgboost"
-            ],
-            "multiModelServer": false
-          }
-        },
-        "pytorch": {
-          "v1" : {
-            "image": "quay.io/mgiessing/pytorchserver",
-            "defaultImageVersion": "v0.6.1",
-            "defaultGpuImageVersion": "v0.6.1-gpu",
-            "supportedFrameworks": [
-              "pytorch"
-            ],
-            "multiModelServer": false
-          },
-          "v2" : {
-            "image": "quay.io/mgiessing/torchserve-kfs",
-            "defaultImageVersion": "0.4.0",
-            "defaultGpuImageVersion": "0.4.0-gpu",
-            "supportedFrameworks": [
-              "pytorch"
-            ],
-            "multiModelServer": false
-          }
-        },
-        "triton": {
-            "image": "quay.io/mgiessing/tritonserver-ppc64le",
-            "defaultImageVersion": "r21.11_MMA",
-            "supportedFrameworks": [
-              "tensorrt",
-              "tensorflow",
-              "onnx",
-              "pytorch",
-              "caffe2"
-            ],
-            "multiModelServer": true
-        },
-        "pmml": {
-            "image": "quay.io/mgiessing/pmmlserver",
-            "defaultImageVersion": "v0.6.1",
-            "supportedFrameworks": [
-              "pmml"
-            ],
-            "multiModelServer": false
-        },
-        "lightgbm": {
-            "image": "quay.io/mgiessing/lgbserver",
-            "defaultImageVersion": "v0.6.1",
-            "supportedFrameworks": [
-              "lightgbm"
-            ],
-            "multiModelServer": false
-        },
-        "paddle": {
-            "image": "quay.io/mgiessing/paddleserver",
-            "defaultImageVersion": "v0.6.1",
-            "supportedFrameworks": [
-              "paddle"
-            ],
-            "multiModelServer": false
-        }
-    }
-  storageInitializer: |-
-    {
-        "image" : "quay.io/mgiessing/storage-initializer:v0.6.1",
+        "image" : "quay.io/mgiessing/storage-initializer:v0.8.0",
         "memoryRequest": "100Mi",
         "memoryLimit": "1Gi",
         "cpuRequest": "100m",
@@ -377,3 +189,4 @@ kind: ConfigMap
 metadata:
   name: inferenceservice-config
   namespace: kubeflow
+---
