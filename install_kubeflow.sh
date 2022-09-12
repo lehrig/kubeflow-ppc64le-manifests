@@ -230,8 +230,8 @@ esac
 ###########################################################################################################################
 # 4. Post-installation cleanup & configuration
 
-# cache-deployer and cache-server not supported yet (are optional anyways)
-kubectl delete deployment cache-deployer-deployment cache-server -n kubeflow
+# cache-deployer and cache-server should be supported now! (Testing required!)
+#kubectl delete deployment cache-deployer-deployment cache-server -n kubeflow
 
 case "$kubernetes_environment" in
 1 ) # OpenShift

@@ -55,11 +55,11 @@ configMapGenerator:
     - sync.py
 
 patchesStrategicMerge:
-- set_memory.yaml
+  #- set_memory.yaml
 - workflow-controller-deployment-patch.yaml
 - training-operator-deployment-patch.yaml
 - rewire-images-in-katib-config.yaml
-- rewire-inference-cm.yaml
+  #- rewire-inference-cm.yaml
 
 images:
 - name: gcr.io/ml-pipeline/api-server
