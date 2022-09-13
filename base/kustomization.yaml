@@ -82,9 +82,6 @@ images:
 - name: gcr.io/ml-pipeline/metadata-writer
   newName: quay.io/ibm/kubeflow-metadata-writer-ppc64le
   newTag: 2.0.0-alpha.3
-- name: gcr.io/ml-pipeline/cache-deployer
-  newName: quay.io/ibm/kubeflow-cache-deployer-ppc64le
-  newTag: 2.0.0-alpha.3
 - name: gcr.io/ml-pipeline/cache-server
   newName: quay.io/ibm/kubeflow-cache-server-ppc64le
   newTag: 2.0.0-alpha.3
@@ -115,12 +112,6 @@ images:
 - name: gcr.io/ml-pipeline/application-crd-controller
   newName: quay.io/ibm/kubeflow-application-crd-controller-ppc64le
   newTag: 1.0-beta-non-cluster-role
-- name: kfserving/kfserving-controller
-  newName: quay.io/ibm/kfserving-controller-ppc64le
-  newTag: v0.8.0
-- name: kfserving/models-web-app 
-  newName: quay.io/ibm/kfserving-models-web-app-ppc64le
-  newTag: v0.8.0
 - name: docker.io/kubeflowkatib/katib-controller
   newName: quay.io/ibm/katib-controller-ppc64le
   newTag: v0.14.0
