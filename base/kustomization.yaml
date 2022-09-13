@@ -8,30 +8,28 @@ resources:
 - https://github.com/kubeflow/manifests/common/kubeflow-roles/base?ref=v1.6.0
 # Kubeflow Istio Resources
 - https://github.com/kubeflow/manifests/common/istio-1-14/kubeflow-istio-resources/base?ref=v1.6.0
-
-# Kubeflow Pipelines
-- https://github.com/kubeflow/manifests/apps/pipeline/upstream/env/platform-agnostic-multi-user-emissary?ref=v1.6.0
 # KNative
 - https://github.com/kubeflow/manifests/common/istio-1-14/cluster-local-gateway/base?ref=v1.6.0
-# KFServing
-#- https://github.com/kubeflow/manifests/apps/kfserving/upstream/overlays/kubeflow?ref=v1.6.0
+
+# Kubeflow Pipelines
+- https://github.com/kubeflow/manifests/apps/pipeline/upstream/env/cert-manager/platform-agnostic-multi-user?ref=v1.6.0
 # Katib
 - https://github.com/kubeflow/manifests/apps/katib/upstream/installs/katib-with-kubeflow?ref=v1.6.0
 # Central Dashboard
 - https://github.com/kubeflow/manifests/apps/centraldashboard/upstream/overlays/kserve?ref=v1.6.0
 # Admission Webhook
 - https://github.com/kubeflow/manifests/apps/admission-webhook/upstream/overlays/cert-manager?ref=v1.6.0
-# Notebook Controller
-- https://github.com/kubeflow/manifests/apps/jupyter/jupyter-web-app/upstream/overlays/istio?ref=v1.6.0
 # Jupyter Web App
+- https://github.com/kubeflow/manifests/apps/jupyter/jupyter-web-app/upstream/overlays/istio?ref=v1.6.0
+# Notebook Controller
 - https://github.com/kubeflow/manifests/apps/jupyter/notebook-controller/upstream/overlays/kubeflow?ref=v1.6.0
 # Profiles + KFAM
 - https://github.com/kubeflow/manifests/apps/profiles/upstream/overlays/kubeflow?ref=v1.6.0
 # Volumes Web App
 - https://github.com/kubeflow/manifests/apps/volumes-web-app/upstream/overlays/istio?ref=v1.6.0
-# Tensorboards Web App
+# Tensorboards Controller
 - https://github.com/kubeflow/manifests/apps/tensorboard/tensorboard-controller/upstream/overlays/kubeflow?ref=v1.6.0
-# Tensorboard Controller
+# Tensorboard Web App
 - https://github.com/kubeflow/manifests/apps/tensorboard/tensorboards-web-app/upstream/overlays/istio?ref=v1.6.0
 # Training Operator
 - https://github.com/kubeflow/manifests/apps/training-operator/upstream/overlays/kubeflow?ref=v1.6.0
@@ -56,6 +54,7 @@ configMapGenerator:
 
 patchesStrategicMerge:
 - set_memory.yaml
+- workflow-controller-configmap-patch.yaml
 - workflow-controller-deployment-patch.yaml
 - training-operator-deployment-patch.yaml
 - rewire-images-in-katib-config.yaml
