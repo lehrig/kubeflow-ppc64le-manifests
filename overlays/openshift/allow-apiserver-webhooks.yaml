@@ -14,6 +14,7 @@ spec:
       - seldon
       - katib-controller
       - kfserving
+      - kserve
       - poddefaults
   ingress:
     - ports:
