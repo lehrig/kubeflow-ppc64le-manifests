@@ -159,7 +159,7 @@ images:
   newTag: v0.8.0-ppc64le
 - name: kubeflow/training-operator
   newName: quay.io/ibm/kubeflow-training-operator-ppc64le
-  newTag: v1.5.0
+  newTag: e1434f6
 - name: kserve/kserve-controller
   newName: quay.io/ibm/kserve-controller-ppc64le
   newTag: v0.8.0
