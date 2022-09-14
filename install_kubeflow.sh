@@ -187,10 +187,10 @@ case "$install_operators" in
         while ! oc kustomize $KUBEFLOW_KUSTOMIZE/nfd | oc apply --kustomize $KUBEFLOW_KUSTOMIZE/nfd; do echo -e "Retrying to apply resources for Node Feature Discovery..."; sleep 10; done
 
         # Install GPU operator
-        #oc new-project gpu-operator
-        #git clone -b ppc64le_v1.10.1 https://github.com/mgiessing/gpu-operator.git $GIT/gpu-operator
-        #sed -i 's/use_ocp_driver_toolkit: false/use_ocp_driver_toolkit: true/g' $GIT/gpu-operator/deployments/gpu-operator/values.yaml
-        #helm install --wait --generate-name $GIT/gpu-operator/deployments/gpu-operator
+        oc new-project gpu-operator
+        git clone -b ppc64le_v1.10.1 https://github.com/mgiessing/gpu-operator.git $GIT/gpu-operator
+        sed -i 's/use_ocp_driver_toolkit: false/use_ocp_driver_toolkit: true/g' $GIT/gpu-operator/deployments/gpu-operator/values.yaml
+        helm install --wait --generate-name $GIT/gpu-operator/deployments/gpu-operator
         ;;
   * ) ;;
 esac
@@ -200,10 +200,6 @@ while ! oc kustomize $KUBEFLOW_KUSTOMIZE/servicemesh | oc apply --kustomize $KUB
 oc wait --for=condition=available --timeout=600s deployment/istiod-kubeflow -n istio-system
 
 # Deploy Kubeflow
-echo "Deploy Kubeflow..."
-echo "Currently in $(pwd) and using this command:"
-echo "while ! oc kustomize $KUBEFLOW_KUSTOMIZE | oc apply --kustomize $KUBEFLOW_KUSTOMIZE; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done"
-
 while ! oc kustomize $KUBEFLOW_KUSTOMIZE | oc apply --kustomize $KUBEFLOW_KUSTOMIZE; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
 
 oc wait --for=condition=available --timeout=600s deployment/centraldashboard -n kubeflow
@@ -214,9 +210,6 @@ oc project kubeflow
 2 ) # k8s
 
 # Deploy Kubeflow
-echo "Deploy Kubeflow..."
-echo "Currently in $(pwd) and using this command:"
-echo "while ! kubectl kustomize $KUBEFLOW_KUSTOMIZE | kubectl apply --kustomize $KUBEFLOW_KUSTOMIZE; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done"
 while ! kubectl kustomize $KUBEFLOW_KUSTOMIZE | kubectl apply --kustomize $KUBEFLOW_KUSTOMIZE; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
 
 # Ensure instio is up and side-cars are injected into kubeflow namespace afterwards (by restarting pods)
@@ -229,10 +222,6 @@ esac
 
 ###########################################################################################################################
 # 4. Post-installation cleanup & configuration
-
-# cache-deployer and cache-server should be supported now! (Testing required!)
-#kubectl delete deployment cache-deployer-deployment cache-server -n kubeflow
-
 case "$kubernetes_environment" in
 1 ) # OpenShift
 
