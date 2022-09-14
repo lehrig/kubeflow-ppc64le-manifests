@@ -46,15 +46,6 @@ patchesStrategicMerge:
 - kf-istio-resources.yaml
 
 images:
-- name: quay.io/jetstack/cert-manager-controller
-  newName: quay.io/jetstack/cert-manager-controller-ppc64le
-  newTag: v1.5.0
-- name: quay.io/jetstack/cert-manager-webhook
-  newName: quay.io/jetstack/cert-manager-webhook-ppc64le
-  newTag: v1.5.0
-- name: quay.io/jetstack/cert-manager-cainjector
-  newName: quay.io/jetstack/cert-manager-cainjector-ppc64le
-  newTag: v1.5.0
 - name: docker.io/istio/proxyv2
   newName: quay.io/ibm/istio-proxyv2-ppc64le
   newTag: 1.14.1-dev
