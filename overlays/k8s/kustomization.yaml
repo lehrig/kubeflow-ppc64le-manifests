@@ -57,4 +57,4 @@ images:
   newTag: 28c59ef
 - name: quay.io/dexidp/dex
   newName: quay.io/ibm/kubeflow-dex-ppc64le
-  newTag: v2.32.1
+  newTag: v2.31.2
