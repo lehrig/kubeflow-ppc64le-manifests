@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: tensorboard-controller-controller-manager
+  name: tensorboard-controller-deployment
   namespace: kubeflow
 spec:
   template:

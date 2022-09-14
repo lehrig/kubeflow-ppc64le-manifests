@@ -166,7 +166,7 @@ EOF
 esac
 
 # Get manifests
-git clone --branch $kubeflow_version https://github.com/lehrig/kubeflow-ppc64le-manifests.git $MANIFESTS
+git clone --branch $kubeflow_version https://github.com/mgiessing/kubeflow-ppc64le-manifests.git $MANIFESTS
 
 ###########################################################################################################################
 # 3. Installation
@@ -188,7 +188,7 @@ case "$install_operators" in
 
         # Install GPU operator
         oc new-project gpu-operator
-        git clone -b ppc64le_v1.9.0 https://github.com/mgiessing/gpu-operator.git $GIT/gpu-operator
+        git clone -b ppc64le_v1.10.1 https://github.com/mgiessing/gpu-operator.git $GIT/gpu-operator
         sed -i 's/use_ocp_driver_toolkit: false/use_ocp_driver_toolkit: true/g' $GIT/gpu-operator/deployments/gpu-operator/values.yaml
         helm install --wait --generate-name $GIT/gpu-operator/deployments/gpu-operator
         ;;
@@ -222,10 +222,6 @@ esac
 
 ###########################################################################################################################
 # 4. Post-installation cleanup & configuration
-
-# cache-deployer and cache-server not supported yet (are optional anyways)
-kubectl delete deployment cache-deployer-deployment cache-server -n kubeflow
-
 case "$kubernetes_environment" in
 1 ) # OpenShift
 
