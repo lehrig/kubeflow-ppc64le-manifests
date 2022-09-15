@@ -48,13 +48,13 @@ patchesStrategicMerge:
 images:
 - name: docker.io/istio/proxyv2
   newName: quay.io/ibm/istio-proxyv2-ppc64le
-  newTag: 1.14.1-dev
+  newTag: 1.14.1
 - name: gcr.io/arrikto/istio/pilot
   newName: quay.io/ibm/istio-pilot-ppc64le
   newTag: 1.14.1
 - name: gcr.io/arrikto/kubeflow/oidc-authservice
   newName: quay.io/ibm/kubeflow-oidc-authservice-ppc64le
   newTag: 28c59ef
-- name: quay.io/dexidp/dex
+- name: ghcr.io/dexidp/dex
   newName: quay.io/ibm/kubeflow-dex-ppc64le
   newTag: v2.31.2
