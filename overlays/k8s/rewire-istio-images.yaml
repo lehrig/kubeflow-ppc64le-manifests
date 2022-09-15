@@ -8,7 +8,7 @@ spec:
     spec:
       containers:
         - name: istio-proxy
-          image: "quay.io/ibm/istio-proxyv2-ppc64le:1.14.1-dev"
+          image: "quay.io/ibm/istio-proxyv2-ppc64le:1.14.1"
 ---
 apiVersion: v1
 kind: ConfigMap
