@@ -234,6 +234,11 @@ oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:kubef
 # TODO: Find out which concrete role needs to be set to spawn training pods (--> https://ibm-systems-power.slack.com/archives/CEA8J8WQ6/p1644315444602459)
 oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:kubeflow:training-operator
 
+# Required by tensorboard controller
+# TODO: only 1 of these is required...
+oc adm policy add-scc-to-user privileged -z tensorboard-controller-controller-manager -n kubeflow
+oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:kubeflow:tensorboard-controller-controller-manager
+
 # HTPasswd & Default User
 # See: https://computingforgeeks.com/manage-openshift-okd-cluster-users-using-htpasswd-identity-provider/
 yum -y install httpd-tools
