@@ -31,6 +31,26 @@ case "$kubernetes_environment" in
   1 ) kubernetes_environment_name="Red Hat OpenShift"
       alias docker="podman"
       
+      kubeadmin_file=/root/ocp4/auth/kubeadmin-password
+      if [ ! -f "$kubeadmin_file" ]
+      then
+        kubeadmin_file=$(find /root -name "kubeadmin-password")  
+        COUNT=$(echo "$kubeadmin_file" | wc -w)
+        
+	if [[ $COUNT -ne 1 ]]
+        then
+          echo -e "${BOLD}Failed finding a single kubeadmin-password file (found $COUNT)."
+          echo -e "$Found these files:"
+          echo "$kubeadmin_file" 
+          read -p "${BOLD}Please enter file to be used: " kubeadmin_file
+          
+          if [ ! -f "$kubeadmin_file" ]
+          then
+            echo -e "The given kubeadmin-password file does not exist - exiting"; return;
+          fi
+        fi 
+      fi
+      
       clusterDomain=$(oc get ingresses.config/cluster -o jsonpath={.spec.domain})
       echo -e ""
       read -p "${BOLD}Install OpenShift operators (Cert-Manager, Service Mesh (incl. Elasticsearch, Kiali, Jaeger), Namespace-Configuration, Serverless, Node Feature Discovery, GPU Operator)?${NORMAL} [y]: " install_operators
@@ -90,6 +110,7 @@ echo -e "- ${BOLD}Kubeflow${NORMAL}: ${kubeflow_version}"
 echo -e "- ${BOLD}Kubernetes environment${NORMAL}: ${kubernetes_environment_name}"
 case "$kubernetes_environment" in
 1 ) # OpenShift
+echo -e "- ${BOLD}kubeadmin_file: ${KUBEADMIN_FILE}"
 echo -e "- ${BOLD}Install OpenShift Operators${NORMAL}: ${install_operators}"
 echo -e "- ${BOLD}clusterDomain${NORMAL}: ${clusterDomain}"
 ;;
@@ -142,7 +163,7 @@ export MANIFESTS=$manifests
 EOF
 	case "$kubernetes_environment" in
         1 ) # OpenShift
-	kube_pw=$(cat $(find /root -name "kubeadmin-password"))
+	kube_pw=$(cat $KUBEADMIN_FILE)
 cat >> /root/.bashrc <<EOF
 export clusterDomain=$clusterDomain
 export KUBEFLOW_KUSTOMIZE=$manifests/overlays/openshift
