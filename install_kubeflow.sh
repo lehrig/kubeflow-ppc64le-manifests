@@ -110,7 +110,7 @@ echo -e "- ${BOLD}Kubeflow${NORMAL}: ${kubeflow_version}"
 echo -e "- ${BOLD}Kubernetes environment${NORMAL}: ${kubernetes_environment_name}"
 case "$kubernetes_environment" in
 1 ) # OpenShift
-echo -e "- ${BOLD}kubeadmin_file: ${kubeadmin_file}"
+echo -e "- ${BOLD}kubeadmin_file${NORMAL}: ${kubeadmin_file}"
 echo -e "- ${BOLD}Install OpenShift Operators${NORMAL}: ${install_operators}"
 echo -e "- ${BOLD}clusterDomain${NORMAL}: ${clusterDomain}"
 ;;
