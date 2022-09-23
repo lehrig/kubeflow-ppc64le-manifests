@@ -168,7 +168,7 @@ cat >> /root/.bashrc <<EOF
 export clusterDomain=$clusterDomain
 export KUBEFLOW_KUSTOMIZE=$manifests/overlays/openshift
 export KUBE_PW=$kube_pw
-oc login -u kubeadmin -p $kube_pw --insecure-skip-tls-verify=true
+oc login -u kubeadmin -p $kube_pw --insecure-skip-tls-verify=true > /dev/null
 EOF
             ;;
         2 ) # k8s
