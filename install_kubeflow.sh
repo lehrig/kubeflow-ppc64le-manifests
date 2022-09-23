@@ -110,7 +110,7 @@ echo -e "- ${BOLD}Kubeflow${NORMAL}: ${kubeflow_version}"
 echo -e "- ${BOLD}Kubernetes environment${NORMAL}: ${kubernetes_environment_name}"
 case "$kubernetes_environment" in
 1 ) # OpenShift
-echo -e "- ${BOLD}kubeadmin_file: ${KUBEADMIN_FILE}"
+echo -e "- ${BOLD}kubeadmin_file: ${kubeadmin_file}"
 echo -e "- ${BOLD}Install OpenShift Operators${NORMAL}: ${install_operators}"
 echo -e "- ${BOLD}clusterDomain${NORMAL}: ${clusterDomain}"
 ;;
@@ -163,7 +163,7 @@ export MANIFESTS=$manifests
 EOF
 	case "$kubernetes_environment" in
         1 ) # OpenShift
-	kube_pw=$(cat $KUBEADMIN_FILE)
+	kube_pw=$(cat $kubeadmin_file)
 cat >> /root/.bashrc <<EOF
 export clusterDomain=$clusterDomain
 export KUBEFLOW_KUSTOMIZE=$manifests/overlays/openshift
