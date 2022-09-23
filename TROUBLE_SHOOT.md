@@ -1,5 +1,7 @@
 # Troubleshooting
 
+## Init:CrashLoopBackOff 
+
 ### Symptoms
 Pods failing with ```Init:CrashLoopBackOff```.
 
@@ -18,3 +20,75 @@ iptables-restore v1.6.1: iptables-restore: unable to initialize table 'nat'
 modprobe br_netfilter ; modprobe nf_nat ; modprobe xt_REDIRECT ; modprobe xt_owner; modprobe iptable_nat; modprobe iptable_mangle; modprobe iptable_filter
 ```
 (see https://github.com/istio/istio/issues/23009)
+
+
+## Namespace not terminating
+
+### Symptoms
+Upon deletion, a namespace remains in ```terminating``` state.
+
+### Diagnosis
+
+```
+oc get ns
+```
+
+Checking if any apiservice is unavailable and hence doesn't serve its resources:
+```
+kubectl get apiservice|grep False
+```
+(see https://github.com/kubernetes/kubernetes/issues/60807#issuecomment-524772920)
+
+
+Finding all resources that still exist via:
+```
+oc api-resources --verbs=list --namespaced -o name | xargs -t -n 1 oc get --show-kind --ignore-not-found -n $PROJECT_NAME 
+```
+(see https://access.redhat.com/solutions/4165791)
+
+Example issue (invalid CA bundle):
+```
+oc get --show-kind --ignore-not-found -n istio-system inferenceservices.serving.kserve.io 
+Error from server (InternalError): Internal error occurred: error resolving resource
+```
+
+Example issue (resources remaining in namespace):
+```
+oc get --show-kind --ignore-not-found -n user-example-com servicemeshmembers.maistra.io 
+NAME                                   CONTROL PLANE           READY   AGE
+servicemeshmember.maistra.io/default   istio-system/kubeflow   False   2d23h
+```
+
+Confirm:
+```
+oc get -n istio-system inferenceservices.serving.kserve.io
+```
+
+Understand:
+```
+oc describe crd inferenceservices.serving.kserve.io
+```
+
+Check for invalid CA bundle:
+```
+oc get crd inferenceservices.serving.kserve.io -o yaml | grep caBundle:
+```
+(see https://access.redhat.com/solutions/6913481)
+
+### Treatment
+
+Force-Delete buggy CRD:
+```
+kubectl patch crd/inferenceservices.serving.kserve.io -p '{"metadata":{"finalizers":[]}}' --type=merge
+```
+(see https://github.com/kubernetes/kubernetes/issues/60538#issuecomment-369099998)
+
+
+Follow cleanup guidelines.
+(see https://docs.openshift.com/container-platform/4.11/service_mesh/v2x/removing-ossm.html#ossm-remove-cleanup_removing-ossm)
+
+Force-Delete buggy CRD:
+```
+kubectl patch crd/servicemeshmembers.maistra.io -p '{"metadata":{"finalizers":[]}}' --type=merge
+```
+

@@ -163,3 +163,18 @@ images:
 - name: kserve/models-web-app
   newName: quay.io/ibm/kserve-models-web-app-ppc64le
   newTag: v0.8.0
+- name: tensorflow/serving
+  newName: quay.io/mgiessing/torchserve
+  newTag: 2.7.0-mma
+- name: kserve/torchserve-kfs
+  newName: quay.io/mgiessing/torchserve
+  newTag: 0.6.0-mma
+- name: nvcr.io/nvidia/tritonserver
+  newName: quay.io/mgiessing/tritonserver
+  newTag: 22.03-py3
+- name: kserve/sklearnserver
+  newName: quay.io/mgiessing/sklearnserver
+  newTag: v0.8.0
+- name: kserve/xgbserver
+  newName: quay.io/mgiessing/xgbserver
+  newTag: v0.8.0
