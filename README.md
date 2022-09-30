@@ -3,8 +3,8 @@ A repository for Kustomize manifests for Kubeflow on IBM Power (ppc64le).
 These manifests base on the [official Kubeflow manifests](http://www.github.com/kubeflow/manifests/).
 
 ## Supported Distributions
-- Red Hat OpenShift v4.5-v4.10 on ppc64le
-- Vanilla Kubernetes v1.17-v1.23 on ppc64le
+- Red Hat OpenShift v4.5-v4.11 on ppc64le
+- Vanilla Kubernetes v1.17-v1.24 on ppc64le
 
 ## Supported Kubeflow Versions
 Please select appropriate tag:
