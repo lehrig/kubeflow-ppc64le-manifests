@@ -36,7 +36,9 @@ resources:
 # KServe
 - https://github.com/kubeflow/manifests/contrib/kserve/kserve?ref=v1.6.0
 - https://github.com/kubeflow/manifests/contrib/kserve/models-web-app/overlays/kubeflow?ref=v1.6.0
-
+# IBM
+- minio-virtual-service.yaml
+ 
 configMapGenerator:
   - name: pipeline-install-config
     env: pipeline-params.env
@@ -59,6 +61,7 @@ patchesStrategicMerge:
 - training-operator-deployment-patch.yaml
 - rewire-images-in-katib-config.yaml
 - rewire-inference-cm.yaml
+- centraldashboard-configmap.yaml
 
 images:
 - name: gcr.io/ml-pipeline/api-server

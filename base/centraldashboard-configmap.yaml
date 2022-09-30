@@ -1,0 +1,136 @@
+apiVersion: v1
+data:
+  settings: |-
+    {
+      "DASHBOARD_FORCE_IFRAME": true
+    }
+  links: |-
+    {
+      "menuLinks": [
+        {
+          "type": "item",
+          "link": "/jupyter/",
+          "text": "Notebooks",
+          "icon": "book"
+        },
+        {
+          "type": "item",
+          "link": "/tensorboards/",
+          "text": "Tensorboards",
+          "icon": "assessment"
+        },
+        {
+          "type": "item",
+          "link": "/volumes/",
+          "text": "Volumes",
+          "icon": "device:storage"
+        },
+        {
+          "type": "item",
+          "link": "/kserve-endpoints/",
+          "text": "Models",
+          "icon": "kubeflow:models"
+        },
+        {
+          "type": "item",
+          "link": "/katib/",
+          "text": "Experiments (AutoML)",
+          "icon": "kubeflow:katib"
+        },
+        {
+          "type": "item",
+          "text": "Experiments (KFP)",
+          "link": "/pipeline/#/experiments",
+          "icon": "done-all"
+        },
+        {
+          "type": "item",
+          "link": "/pipeline/#/pipelines",
+          "text": "Pipelines",
+          "icon": "kubeflow:pipeline-centered"
+        },
+        {
+          "type": "item",
+          "link": "/pipeline/#/runs",
+          "text": "Runs",
+          "icon": "maps:directions-run"
+        },
+        {
+          "type": "item",
+          "link": "/pipeline/#/recurringruns",
+          "text": "Recurring Runs",
+          "icon": "device:access-alarm"
+        },
+        {
+          "type": "item",
+          "link": "/pipeline/#/artifacts",
+          "text": "Artifacts",
+          "icon": "editor:bubble-chart"
+        },
+        {
+          "type": "item",
+          "link": "/pipeline/#/executions",
+          "text": "Executions",
+          "icon": "av:play-arrow"
+        },
+        {
+          "type": "item",
+          "link": "/minio/",
+          "text": "Object Store",
+          "icon": "image:wb-cloudy"
+        }
+      ],
+      "externalLinks": [ ],
+        "quickLinks": [
+          {
+            "text": "Develop ML pipelines",
+            "desc": "Notebook Servers",
+            "link": "/jupyter/new?namespace=kubeflow"
+          },
+          {
+            "text": "Manage ML pipelines",
+            "desc": "Pipelines",
+            "link": "/pipeline/"
+          },
+          {
+            "text": "View all ML pipeline runs",
+            "desc": "Pipeline Runs",
+            "link": "/pipeline/#/runs"
+          },
+          {
+            "text": "View deployed Models",
+            "desc": "Models",
+            "link": "/kserve-endpoints/"
+          }
+        ],
+        "documentationItems": [
+          {
+            "text": "Getting Started with Kubeflow on IBM Power",
+            "desc": "Get your machine-learning workflow up and running on Kubeflow with IBM Power",
+            "link": "https://community.ibm.com/community/user/powerdeveloper/blogs/sebastian-lehrig/2022/08/10/mlops-with-kubeflow-on-ibm-power?CommunityKey=daf9dca2-95e4-4b2c-8722-03cd2275ab63"
+          },
+          {
+            "text": "End-to-End Examples",
+            "desc": "Example ML Pipelines end-to-end: data ingestion & cleaning - model training & deployment",
+            "link": "https://github.com/lehrig/kubeflow-ppc64le-examples"
+          },
+          {
+            "text": "Reusable ML Pipeline Components",
+            "desc": "Plug these reusable components into your ML pipelines & save time!",
+            "link": "https://github.com/lehrig/kubeflow-ppc64le-components"
+          },
+          {
+            "text": "Installing Kubeflow on IBM Power",
+            "desc": "Official Kubeflow integration for IBM Power",
+            "link": "https://github.com/lehrig/kubeflow-ppc64le-manifests"
+          },
+          {
+            "text": "Official Kubeflow Docs",
+            "desc": "Get more detailed information about using Kubeflow and its components",
+            "link": "https://www.kubeflow.org/docs/"
+          }
+        ]
+    }
+kind: ConfigMap
+metadata:
+  name: centraldashboard-config
