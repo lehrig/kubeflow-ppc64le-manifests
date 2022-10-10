@@ -53,6 +53,11 @@ configMapGenerator:
     behavior: replace
     files:
     - sync.py
+  - name: tensorboard-controller-config
+    namespace: kubeflow
+    behavior: merge
+    literals:
+      - TENSORBOARD_IMAGE=quay.io/mgiessing/tensorflow:2.5.1
 
 patchesStrategicMerge:
 - set_memory.yaml
