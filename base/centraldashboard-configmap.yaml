@@ -77,7 +77,7 @@ data:
           "type": "item",
           "link": "/minio/",
           "text": "Object Store",
-          "icon": "image:wb-cloudy"
+          "icon": "icons:cloud"
         }
       ],
       "externalLinks": [ ],
