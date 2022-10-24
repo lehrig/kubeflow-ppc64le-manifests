@@ -2,6 +2,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: minio
+  namespace: kubeflow
 spec:
   gateways:
   - kubeflow-gateway
@@ -15,6 +16,6 @@ spec:
       uri: /minio/
     route:
     - destination:
-        host: minio-service.$(kfp-namespace).svc.cluster.local
+        host: minio-service.kubeflow.svc.cluster.local
         port:
           number: 9000
