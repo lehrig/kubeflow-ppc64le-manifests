@@ -67,6 +67,32 @@ case "$kubernetes_environment" in
 esac
 
 echo -e ""
+read -p "${BOLD}Install Trino (connects multiple databases in a single SQL query)?${NORMAL} [y]: " install_trino
+install_trino=${install_trino:-y}
+case "$install_trino" in
+  y|Y ) ;;
+  n|N ) ;;
+  * ) echo -e "invalid - exiting"; return;;
+esac
+
+echo -e ""
+read -p "${BOLD}Create datalake namespace with exemplary databases & data (PostgreSQL, MongoDB, Apache Kafka)?${NORMAL} [y]: " create_datalake
+create_datalake=${create_datalake:-y}
+case "$create_datalake" in
+  y|Y ) case "$kubernetes_environment" in
+        1 ) ;;
+        2 ) # Ask for Red Hat credentials
+	    echo -e "Installing Apache Kafka via Red Hat AMQ Streams requires a Red Hat login; please provide your credentials."	
+	    read -p "Red Hat user name: " redhat_user
+            read -s -p "Red Hat password (input hidden): " redhat_pass
+            ;;
+        esac
+        ;;
+  n|N ) ;;
+  * ) echo -e "invalid - exiting"; return;;
+esac
+
+echo -e ""
 read -p "${BOLD}To avoid toomanyrequests errors for Docker.io, do you want to store your Docker.io credentials?${NORMAL} [y]: " store_credentials
 store_credentials=${store_credentials:-y}
 case "$store_credentials" in 
@@ -118,6 +144,8 @@ echo -e "- ${BOLD}clusterDomain${NORMAL}: ${clusterDomain}"
 echo -e "- ${BOLD}externalIpAddress${NORMAL}: ${externalIpAddress}"
 ;;
 esac
+echo -e "- ${BOLD}Install Trino${NORMAL}: ${install_trino}"
+echo -e "- ${BOLD}Create datalake namespace${NORMAL}: ${create_datalake}"
 echo -e "- ${BOLD}Store Docker.io credentials${NORMAL}: ${store_credentials}"
 echo -e "- ${BOLD}Update .bashrc file${NORMAL}: ${update_bashrc}"
 echo -e "- ${BOLD}KUBEFLOW_BASE_DIR${NORMAL}: ${kubeflow_base_dir}"
@@ -198,8 +226,8 @@ case "$install_operators" in
   y|Y ) # Install Cert Manager Operator
         # See: https://cert-manager.io/docs/installation/openshift/
         # TODO: Try from OperatorHub (when Kubeflow supports higher cert-manager versions)
-        oc new-project cert-manager
-        oc apply -f https://github.com/jetstack/cert-manager/releases/download/v1.5.4/cert-manager.yaml
+	oc create namespace cert-manager
+        oc apply -n cert-manager -f https://github.com/jetstack/cert-manager/releases/download/v1.5.4/cert-manager.yaml
 
         # Install subscriptions (operators from OperatorHub)
         while ! oc kustomize $KUBEFLOW_KUSTOMIZE/subscriptions | oc apply --kustomize $KUBEFLOW_KUSTOMIZE/subscriptions; do echo -e "Retrying to apply resources for Cert Manager..."; sleep 10; done
@@ -208,13 +236,530 @@ case "$install_operators" in
         while ! oc kustomize $KUBEFLOW_KUSTOMIZE/nfd | oc apply --kustomize $KUBEFLOW_KUSTOMIZE/nfd; do echo -e "Retrying to apply resources for Node Feature Discovery..."; sleep 10; done
 
         # Install GPU operator
-        oc new-project gpu-operator
+        oc create namespace gpu-operator
         git clone -b ppc64le_v1.10.1 https://github.com/mgiessing/gpu-operator.git $GIT/gpu-operator
         sed -i 's/use_ocp_driver_toolkit: false/use_ocp_driver_toolkit: true/g' $GIT/gpu-operator/deployments/gpu-operator/values.yaml
-        helm install --wait --generate-name $GIT/gpu-operator/deployments/gpu-operator
+        helm install -n gpu-operator --wait --generate-name $GIT/gpu-operator/deployments/gpu-operator
         ;;
   * ) ;;
 esac
+
+case "$create_datalake" in
+  y|Y ) DATALAKE_NAMESPACE=datalake
+	DATALAKE_USER=uptake
+	DATALAKE_PASS=marten-mole
+
+	POSTGRESQL_SERVICE=postgresql
+	POSTGRESQL_DATABASE=stock-prices
+	POSTGRESQL_VOLUME_CAPACITY=10Gi
+
+	MONGODB_SERVICE=mongodb
+	MONGODB_DATABASE=weather
+	MONGODB_VOLUME_CAPACITY=10Gi
+
+	KAFKA_CLUSTER=stock-weather-streams
+	
+	case "$kubernetes_environment" in
+        1 ) oc create namespace $DATALAKE_NAMESPACE
+
+	    # Install PostgreSQL Template
+	    oc process -n openshift postgresql-persistent -p NAMESPACE=$DATALAKE_NAMESPACE -p POSTGRESQL_SERVICE=$POSTGRESQL_SERVICE -p DATALAKE_USER=$DATALAKE_USER -p DATALAKE_PASS=$DATALAKE_PASS -p POSTGRESQL_DATABASE=$POSTGRESQL_DATABASE -p VOLUME_CAPACITY=$POSTGRESQL_VOLUME_CAPACITY | oc create -f -
+
+            # Install Red Hat AMQ Streams Operator (based on Strimzi Operator for Apache Kafka Streaming support)
+            cat <<EOF | kubectl apply -n openshift-operators -f -
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  labels:
+    operators.coreos.com/amq-streams.openshift-operators: ""
+  name: amq-streams
+  namespace: openshift-operators
+spec:
+  channel: stable
+  installPlanApproval: Automatic
+  name: amq-streams
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+EOF
+            ;;
+        2 ) kubectl create namespace $DATALAKE_NAMESPACE
+            
+            # Save Red Hat subscription in secret
+	    kubectl create -n $DATALAKE_NAMESPACE secret docker-registry redhat-registry --docker-username=$REDHAT_USER --docker-password=$REDHAT_PASS --docker-server=registry.redhat.io
+	     
+	    # Install PostgreSQL based on modified PostgreSQL Template 
+            # See: https://github.com/sclorg/postgresql-container/blob/master/examples/postgresql-persistent-template.json
+	    cat <<EOF | kubectl apply -n $DATALAKE_NAMESPACE -f -
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ${POSTGRESQL_SERVICE}
+  labels: 
+    name: ${POSTGRESQL_SERVICE}
+stringData:
+  database-name: ${POSTGRESQL_DATABASE}
+  database-password: ${DATALAKE_PASS}
+  database-user: ${DATALAKE_USER}
+  database-db: ${DATALAKE_USER}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ${POSTGRESQL_SERVICE}
+  labels: 
+    name: ${POSTGRESQL_SERVICE}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:ALAKE_NAMESPACE
+
+            # Save Red Hat subscription in
+    requests:
+      storage: ${POSTGRESQL_VOLUME_CAPACITY}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${POSTGRESQL_SERVICE}
+  labels: 
+    name: ${POSTGRESQL_SERVICE}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: ${POSTGRESQL_SERVICE}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        name: ${POSTGRESQL_SERVICE}
+    spec:
+      containers:
+      - env:
+        - name: POSTGRES_USER #DATALAKE_USER
+          valueFrom:
+            secretKeyRef:
+              key: database-user
+              name: ${POSTGRESQL_SERVICE}
+        - name: POSTGRES_PASSWORD #DATALAKE_PASS
+          valueFrom:
+            secretKeyRef:
+              key: database-password
+              name: ${POSTGRESQL_SERVICE}
+        - name: POSTGRES_DB #POSTGRESQL_DATABASE
+          valueFrom:
+            secretKeyRef:
+              key: database-name
+              name: ${POSTGRESQL_SERVICE}
+        # for docker image only
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        # registry.redhat.io/rhscl/postgresql-12-rhel7
+        image: registry.hub.docker.com/ppc64le/postgres # https://hub.docker.com/r/ppc64le/postgres
+        imagePullPolicy: IfNotPresent
+        name: ${POSTGRESQL_SERVICE}
+        ports:
+          - containerPort: 5432
+            protocol: TCP
+        securityContext:
+          privileged: false
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data #/var/lib/psql/data
+          name: ${POSTGRESQL_SERVICE}-data
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: redhat-registry
+      volumes:
+      - name: ${POSTGRESQL_SERVICE}-data
+        persistentVolumeClaim:
+          claimName: ${POSTGRESQL_SERVICE}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+  name: ${POSTGRESQL_SERVICE}
+  labels: 
+    name: ${POSTGRESQL_SERVICE}
+spec:
+  ports:
+  - port: 5432
+    protocol: TCP
+    targetPort: 5432
+  selector:
+    name: ${POSTGRESQL_SERVICE}
+  sessionAffinity: None
+  type: ClusterIP
+EOF
+
+            # Install Red Hat AMQ Streams manually (inspired by OpenShift installation; requires Red Hat subscription)
+	    AMQ_STREAMS_INSTALLER=amq-streams-installer.zip
+            wget https://ibm.box.com/shared/static/6ccbwncple6sngpiq3b890n8xqfq00c2.zip -O $AMQ_STREAMS_INSTALLER
+            unzip $AMQ_STREAMS_INSTALLER
+            mkdir amq-streams-installer
+            mv examples amq-streams-installer
+            mv install amq-streams-installer
+	    rm -f $AMQ_STREAMS_INSTALLER
+            sed -i 's/namespace: .*/namespace: ${DATALAKE_NAMESPACE}/' amq-streams-installer/install/cluster-operator/*RoleBinding*.yaml
+            oc apply -f amq-streams-installer/install/cluster-operator
+            rm -f amq-streams-installer
+
+            cat <<EOF | kubectl apply -n $DATALAKE_NAMESPACE -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-deployment
+  labels:
+    name: kafka-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: kafka-deployment
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        name: kafka-deployment
+    spec:
+      containers:
+      - image: registry.redhat.io/amq7/amq-streams-kafka-32-rhel8:2.2.0-9
+        imagePullPolicy: Always
+        name: amq-kafka
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: redhat-registry
+EOF
+            ;;
+        esac
+
+        kubectl patch serviceaccount -n ${DATALAKE_NAMESPACE} default -p '{"imagePullSecrets": [{"name": "redhat-registry"}]}'
+        kubectl patch serviceaccount -n ${DATALAKE_NAMESPACE} ${KAFKA_CLUSTER}-zookeeper -p '{"imagePullSecrets": [{"name": "redhat-registry"}]}'
+        kubectl patch serviceaccount -n ${DATALAKE_NAMESPACE} strimzi-cluster-operator -p '{"imagePullSecrets": [{"name": "redhat-registry"}]}'
+	kubectl patch serviceaccount -n ${DATALAKE_NAMESPACE} kafka-bridge-bridge -p '{"imagePullSecrets": [{"name": "redhat-registry"}]}'
+	kubectl patch serviceaccount -n ${DATALAKE_NAMESPACE} ${KAFKA_CLUSTER}-streams-entity-operator -p '{"imagePullSecrets": [{"name": "redhat-registry"}]}'
+
+	# Install MongoDB
+        cat <<EOF | kubectl apply -n $DATALAKE_NAMESPACE -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${MONGODB_SERVICE}
+  labels:
+    name: ${MONGODB_SERVICE}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: ${MONGODB_SERVICE}
+  template:
+    metadata:
+      labels:
+        name: ${MONGODB_SERVICE}
+    spec:
+      containers:
+      - name: ${MONGODB_SERVICE}
+        image: ibmcom/ibm-enterprise-mongodb-ppc64le:latest
+        ports:
+        - containerPort: 27017
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          value: ${DATALAKE_USER}
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          value: ${DATALAKE_PASS}
+        volumeMounts:
+        - mountPath: /data/db
+          name: mongodb-volume
+      volumes:
+      - name: mongodb-volume
+        persistentVolumeClaim:
+          claimName: ${MONGODB_SERVICE}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ${MONGODB_SERVICE}
+  labels: 
+    name: ${MONGODB_SERVICE}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: ${MONGODB_VOLUME_CAPACITY}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: ${MONGODB_SERVICE}
+  name: ${MONGODB_SERVICE}
+spec:
+  ports:
+  - port: 27017
+    protocol: TCP
+    targetPort: 27017
+  selector:
+    name: ${MONGODB_SERVICE}
+EOF
+
+        # Create Kafka resources
+        cat <<EOF | kubectl apply -n $DATALAKE_NAMESPACE -f -
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+ name: ${KAFKA_CLUSTER}
+spec:
+  kafka:
+    config:
+      offsets.topic.replication.factor: 3
+      transaction.state.log.replication.factor: 3
+      transaction.state.log.min.isr: 2
+      default.replication.factor: 3
+      min.insync.replicas: 2
+      inter.broker.protocol.version: '3.1'
+    storage:
+      type: ephemeral
+    listeners:
+      - name: external
+        port: 9094
+        type: route
+        tls: false
+      - name: plain
+        port: 9092
+        type: internal
+        tls: false
+      - name: tls
+        port: 9093
+        type: internal
+        tls: true
+    version: 3.1.0
+    replicas: 3
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}
+  zookeeper:
+    storage:
+      type: ephemeral
+    replicas: 3
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: stockdata
+  labels:
+    strimzi.io/cluster: ${KAFKA_CLUSTER}
+spec:
+  partitions: 10
+  replicas: 3
+  config:
+    retention.ms: 604800000
+    segment.bytes: 1073741824
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: weatherdata
+  labels:
+    strimzi.io/cluster: ${KAFKA_CLUSTER}
+spec:
+  partitions: 10
+  replicas: 3
+  config:
+    retention.ms: 604800000
+    segment.bytes: 1073741824
+---
+apiVersion: kafka.strimzi.io/v1alpha1
+kind: KafkaBridge
+metadata:
+  name: kafka-bridge
+  labels:
+    strimzi.io/cluster: ${KAFKA_CLUSTER}
+spec:
+  replicas: 1
+  bootstrapServers: '${KAFKA_CLUSTER}-kafka-bootstrap:9092'
+  http:
+    port: 8090
+EOF
+
+        cat <<EOF | kubectl apply -n $DATALAKE_NAMESPACE -f -
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: weatherproducer
+spec:
+  successfulJobsHistoryLimit: 1
+  schedule: "45 0 * * *"       
+  startingDeadlineSeconds: 200  
+  jobTemplate:                  
+    spec:
+      template:
+        metadata:
+          name: weatherproducer
+          labels:               
+            parent: "cronjobweatherproducer"
+        spec:
+          containers:
+          - name: weatherproducer
+            image: quay.io/nataliejann/kafkaproducers:weatherproducer
+            imagePullPolicy: Always
+          restartPolicy: OnFailure
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: stockproducer
+spec:
+  successfulJobsHistoryLimit: 1
+  schedule: "0 16 * * *"       
+  startingDeadlineSeconds: 200  
+  jobTemplate:                  
+    spec:
+      template:
+        metadata:
+          name: stockproducers
+          labels:               
+            parent: "cronjobstockproducer"
+        spec:
+          containers:
+          - name: stockproducer
+            image: quay.io/nataliejann/kafkaproducers:stockproducer
+            imagePullPolicy: Always
+          restartPolicy: OnFailure
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: weather-history-producer
+  labels:
+    app: weather-history-producer
+spec:
+  selector:
+    matchLabels:
+      app: weather-history-producer
+  template:
+    metadata:
+      labels:
+        app: weather-history-producer
+    spec:
+      containers:
+      - name: weather-history-producer
+        image: quay.io/nataliejann/kafkaproducers:weatherhistoryproducer
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: stock-history-producer
+  labels:
+    app: stock-history-producer
+spec:
+  selector:
+    matchLabels:
+      app: stock-history-producer
+  template:
+    metadata:
+      labels:
+        app: stock-history-producer
+    spec:
+      containers:
+      - name: stock-history-producer
+        image: quay.io/nataliejann/kafkaproducers:stockhistoryproducer
+EOF
+
+	####################
+        # Initialize Data Basis
+
+	# Initialize PostgreSQL
+	DATA_FILE=HistoricalData_Apple.csv
+        wget https://ibm.box.com/shared/static/89i7cxkeok6ndd0kh6q2ycvviip94eby.csv -O $DATA_FILE
+        sed -i 's/\$//g' $DATA_FILE
+        cat > init-stock-prices.sql <<EOF
+CREATE TABLE IF NOT EXISTS public.applehistory
+(
+    "Date" date NOT NULL,
+    "Close" real,
+    "Volume" bigint,
+    "Open" real,
+    "High" real,
+    "Low" real,
+    CONSTRAINT "appleHistory_pkey" PRIMARY KEY ("Date")
+);
+\copy public.applehistory FROM '/tmp/$DATA_FILE' WITH (FORMAT csv, HEADER true, DELIMITER ',');
+EOF
+        POSTGRESQL_POD=$(kubectl get po -n $DATALAKE_NAMESPACE -l name=$POSTGRESQL_SERVICE -o jsonpath={..metadata.name})
+        kubectl cp -n $DATALAKE_NAMESPACE $DATA_FILE $POSTGRESQL_POD:/tmp/
+	kubectl cp -n $DATALAKE_NAMESPACE init-stock-prices.sql $POSTGRESQL_POD:/tmp/
+	kubectl exec -n $DATALAKE_NAMESPACE $POSTGRESQL_POD -- psql -U $DATALAKE_USER -d $POSTGRESQL_DATABASE -a -f /tmp/init-stock-prices.sql
+
+        rm -f $DATA_FILE init-stock-prices.sql
+
+	# Initialize MongoDB
+        WEATHER_FILE=weather_ny_2012-2022.csv
+        wget https://ibm.box.com/shared/static/3tgm9bwxsl8tjezk0jgfjvk48cma46li.csv -O $WEATHER_FILE
+	SCHEMA_FILE=mongo-schema-definition.json
+	cat > $SCHEMA_FILE <<EOF
+{
+    "table": "weatherny",
+    "fields": [
+        {"name": "_id",
+         "type": "date",
+         "hidden": false },
+        {"name": "AWND",
+         "type": "DOUBLE",
+         "hidden": false },
+        {"name": "PGTM",
+         "type": "DOUBLE",
+         "hidden": false },
+        {"name": "PRCP",
+         "type": "DOUBLE",
+         "hidden": false },
+        {"name": "SNOW",
+         "type": "DOUBLE",
+         "hidden": false },
+        {"name": "SNWD",
+         "type": "DOUBLE",
+         "hidden": false },
+        {"name": "TAVG",
+         "type": "DOUBLE",
+         "hidden": false },
+        {"name": "TMAX",
+         "type": "DOUBLE",
+         "hidden": false },
+        {"name": "TMIN",
+         "type": "DOUBLE",
+         "hidden": false }
+    ]
+}
+EOF
+        # Each database has to have a dedicated user
+        MONGO_USER_FILE=create-mongo-user.mongodb
+        cat > $MONGO_USER_FILE <<EOF
+db.createUser(
+  {
+    user: "${DATALAKE_USER}",
+    pwd: "${DATALAKE_PASS}",
+    roles: [ { role: "dbOwner", db: "${MONGODB_DATABASE}" } ]
+  }
+)
+EOF
+	DATABASE_TOOLS=database_tools.tgz
+	wget https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu1804-ppc64le-100.6.1.tgz -O $DATABASE_TOOLS
+	MONGODB_POD=$(kubectl get po -n $DATALAKE_NAMESPACE -l name=$MONGODB_SERVICE -o jsonpath={..metadata.name})
+
+        kubectl cp -n $DATALAKE_NAMESPACE $DATABASE_TOOLS $MONGODB_POD:/tmp/
+        kubectl cp -n $DATALAKE_NAMESPACE $WEATHER_FILE $MONGODB_POD:/tmp/
+        kubectl cp -n $DATALAKE_NAMESPACE $MONGO_USER_FILE $MONGODB_POD:/tmp/
+
+        kubectl exec -n $DATALAKE_NAMESPACE $MONGODB_POD -- bash -c "mkdir /tmp/mongodb && tar --strip-components=1 -zxf mongodb-database-tools-*.tgz -C /tmp/mongodb && /tmp/mongodb/bin/mongoimport -d ${MONGODB_DATABASE} -c weatherny --type csv --columnsHaveTypes --file /tmp/${WEATHER_FILE} --headerline --username ${DATALAKE_USER} --password ${DATALAKE_PASS} --authenticationDatabase admin && /tmp/mongodb/bin/mongoimport -d ${MONGODB_DATABASE} -c schemadef --file /tmp/${SCHEMA_FILE} --username ${DATALAKE_USER} --password ${DATALAKE_PASS} --authenticationDatabase admin && mongo -u ${DATALAKE_USER} -p ${DATALAKE_PASS} --authenticationDatabase admin ${MONGODB_DATABASE} /tmp/${MONGO_USER_FILE}"
+	
+	rm -f $WEATHER_FILE $SCHEMA_FILE $MONGO_USER_FILE
+        ;;
+  * ) ;;
+esac
+
 
 # Configure service mesh
 while ! oc kustomize $KUBEFLOW_KUSTOMIZE/servicemesh | oc apply --kustomize $KUBEFLOW_KUSTOMIZE/servicemesh; do echo -e "Retrying to apply resources for Service Mesh..."; sleep 10; done
@@ -233,7 +778,7 @@ oc project kubeflow
 # Deploy Kubeflow
 while ! kubectl kustomize $KUBEFLOW_KUSTOMIZE | kubectl apply --kustomize $KUBEFLOW_KUSTOMIZE; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
 
-# Ensure instio is up and side-cars are injected into kubeflow namespace afterwards (by restarting pods)
+# Ensure istio is up and side-cars are injected into kubeflow namespace afterwards (by restarting pods)
 kubectl wait --for=condition=available --timeout=600s deployment/istiod -n istio-system
 kubectl delete pod --all -n kubeflow
 kubectl delete pod --all -n kubeflow-user-example-com
@@ -242,7 +787,153 @@ kubectl wait --for=condition=available --timeout=600s deployment/centraldashboar
 esac
 
 ###########################################################################################################################
-# 4. Post-installation cleanup & configuration
+# 4. Install Trino
+case "$install_trino" in
+  y|Y ) kubectl create namespace trino 
+
+        cd $GIT
+        git clone https://github.com/trinodb/charts.git
+        cd charts/charts
+
+        cat >> trino-catalogs.txt <<EOF
+additionalCatalogs:
+  kafka: |
+    connector.name=kafka
+    kafka.table-names=trinostock, trinoweather
+    kafka.nodes=${KAFKA_CLUSTER}-kafka-bootstrap.${DATALAKE_NAMESPACE}:9092
+    kafka.hide-internal-columns=false
+    kafka.table-description-supplier=FILE
+    kafka.table-description-dir=/etc/trino/schemas
+    kafka.timestamp-upper-bound-force-push-down-enabled=true  
+  mongodb: |
+    connector.name=mongodb
+    mongodb.connection-url=mongodb://${DATALAKE_USER}:${DATALAKE_PASS}@${MONGODB_SERVICE}.${DATALAKE_NAMESPACE}:27017/?authSource=${MONGODB_DATABASE}
+    mongodb.schema-collection=schemadef
+  postgresql: |
+    connector.name=postgresql
+    connection-url=jdbc:postgresql://${POSTGRESQL_SERVICE}.${DATALAKE_NAMESPACE}:5432/${POSTGRESQL_DATABASE}
+    connection-user=${DATALAKE_USER}
+    connection-password=${DATALAKE_PASS}
+    decimal-mapping=allow_overflow
+    decimal-rounding-mode=HALF_UP
+EOF
+        sed -i "/additionalCatalogs: {}/r trino-catalogs.txt" trino/values.yaml
+        sed -i "/additionalCatalogs: {}/d" trino/values.yaml
+        rm -f trino-catalogs.txt
+
+	cat >> trino-kafka-table.txt <<'EOF'
+  tableDescriptions:
+    stockdata.json: |-
+      {
+        "tableName": "trinostock",
+        "topicName": "stockdata",
+        "dataFormat": "json",
+        "message": {
+          "dataFormat": "json",
+          "fields": [
+            {
+                "name": "date",
+                "mapping": "date",
+                "type": "DATE",
+                "dataFormat": "iso8601"
+            },
+            {
+                "name": "apple_price",
+                "mapping": "apple_price",
+                "type": "DOUBLE"
+            },
+            {
+                "name": "volume",
+                "mapping": "volume",
+                "type": "BIGINT"
+            },
+            {
+                "name": "low",
+                "mapping": "low",
+                "type": "DOUBLE"
+            },
+            {
+                "name": "high",
+                "mapping": "high",
+                "type": "DOUBLE"
+            },
+            {
+                "name": "open",
+                "mapping": "open",
+                "type": "DOUBLE"
+            }
+          ]
+        }
+      }
+    weatherdata.json: |-
+      {
+        "tableName": "trinoweather",
+        "topicName": "weatherdata",
+        "dataFormat": "json",
+        "message": {
+          "dataFormat": "json",
+          "fields": [
+            {
+                "name": "STATION",
+                "mapping": "STATION",
+                "type": "VARCHAR"
+            },
+            {
+                "name": "AWND",
+                "mapping": "AWND",
+                "type": "DOUBLE"
+            },
+            {
+                "name": "PRCP",
+                "mapping": "PRCP",
+                "type": "DOUBLE"
+            },
+            {
+                "name": "SNOW",
+                "mapping": "SNOW",
+                "type": "DOUBLE"
+            },
+            {
+                "name": "SNWD",
+                "mapping": "SNWD",
+                "type": "DOUBLE"
+            },
+            {
+                "name": "TAVG",
+                "mapping": "TAVG",
+                "type": "DOUBLE"
+            },{
+                "name": "TMIN",
+                "mapping": "TMIN",
+                "type": "DOUBLE"
+            },
+            {
+                "name": "TMAX",
+                "mapping": "TMAX",
+                "type": "DOUBLE"
+            },
+            {
+                "name": "DATE",
+                "mapping": "DATE",
+                "type": "DATE",
+                "dataFormat": "iso8601"
+            }
+          ]
+        }
+      }
+EOF
+        sed -i "/  tableDescriptions: {}/r trino-kafka-table.txt" trino/values.yaml
+        sed -i "/  tableDescriptions: {}/d" trino/values.yaml
+        rm -f trino-kafka-table.txt
+
+	helm install -n trino trino ./trino
+
+        ;;
+  * ) ;;
+esac
+
+###########################################################################################################################
+# 5. Post-installation cleanup & configuration
 case "$kubernetes_environment" in
 1 ) # OpenShift
 
