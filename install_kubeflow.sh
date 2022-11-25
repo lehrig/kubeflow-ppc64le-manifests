@@ -215,7 +215,11 @@ EOF
 esac
 
 # Get manifests
-git clone --branch $kubeflow_version https://github.com/lehrig/kubeflow-ppc64le-manifests.git $MANIFESTS
+if [ -d "$MANIFESTS" ]; then
+    echo "Warning: $MANIFESTS already exists; skipping git clone."
+else
+    git clone --branch $kubeflow_version https://github.com/lehrig/kubeflow-ppc64le-manifests.git $MANIFESTS
+fi
 
 ###########################################################################################################################
 # 3. Installation
@@ -243,7 +247,39 @@ case "$install_operators" in
         ;;
   * ) ;;
 esac
+# Configure service mesh
+while ! oc kustomize $KUBEFLOW_KUSTOMIZE/servicemesh | oc apply --kustomize $KUBEFLOW_KUSTOMIZE/servicemesh; do echo -e "Retrying to apply resources for Service Mesh..."; sleep 10; done
+oc wait --for=condition=available --timeout=600s deployment/istiod-kubeflow -n istio-system
 
+# Deploy Kubeflow
+while ! oc kustomize $KUBEFLOW_KUSTOMIZE | oc apply --kustomize $KUBEFLOW_KUSTOMIZE; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
+
+oc wait --for=condition=available --timeout=600s deployment/centraldashboard -n kubeflow
+
+oc project kubeflow
+#############################################
+;;
+2 ) # k8s
+
+# Deploy Kubeflow
+echo -e ""
+echo -e "######################################################"
+echo -e "# Initializing Kubeflow Installation; please wait... #"
+echo -e "######################################################"
+echo -e ""
+
+while ! kubectl kustomize $KUBEFLOW_KUSTOMIZE | kubectl apply --kustomize $KUBEFLOW_KUSTOMIZE; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
+
+# Ensure istio is up and side-cars are injected into kubeflow namespace afterwards (by restarting pods)
+kubectl wait --for=condition=available --timeout=600s deployment/istiod -n istio-system
+kubectl delete pod --all -n kubeflow
+kubectl delete pod --all -n kubeflow-user-example-com
+kubectl wait --for=condition=available --timeout=600s deployment/centraldashboard -n kubeflow
+;;
+esac
+
+#############################################
+# Datalake
 case "$create_datalake" in
   y|Y ) DATALAKE_NAMESPACE=datalake
 	DATALAKE_USER=uptake
@@ -258,11 +294,11 @@ case "$create_datalake" in
 	MONGODB_VOLUME_CAPACITY=10Gi
 
 	KAFKA_CLUSTER=stock-weather-streams
-	
-	case "$kubernetes_environment" in
-        1 ) oc create namespace $DATALAKE_NAMESPACE
 
-	    # Install PostgreSQL Template
+        kubectl create namespace $DATALAKE_NAMESPACE
+
+	case "$kubernetes_environment" in
+        1 ) # Install PostgreSQL Template
 	    oc process -n openshift postgresql-persistent -p NAMESPACE=$DATALAKE_NAMESPACE -p POSTGRESQL_SERVICE=$POSTGRESQL_SERVICE -p DATALAKE_USER=$DATALAKE_USER -p DATALAKE_PASS=$DATALAKE_PASS -p POSTGRESQL_DATABASE=$POSTGRESQL_DATABASE -p VOLUME_CAPACITY=$POSTGRESQL_VOLUME_CAPACITY | oc create -f -
 
             # Install Red Hat AMQ Streams Operator (based on Strimzi Operator for Apache Kafka Streaming support)
@@ -282,10 +318,8 @@ spec:
   sourceNamespace: openshift-marketplace
 EOF
             ;;
-        2 ) kubectl create namespace $DATALAKE_NAMESPACE
-            
-            # Save Red Hat subscription in secret
-	    kubectl create -n $DATALAKE_NAMESPACE secret docker-registry redhat-registry --docker-username=$REDHAT_USER --docker-password=$REDHAT_PASS --docker-server=registry.redhat.io
+        2 ) # Save Red Hat subscription in secret
+	    #TODO LEHRIGkubectl create -n $DATALAKE_NAMESPACE secret docker-registry redhat-registry --docker-username=$redhat_user --docker-password=$redhat_pass --docker-server=registry.redhat.io
 	     
 	    # Install PostgreSQL based on modified PostgreSQL Template 
             # See: https://github.com/sclorg/postgresql-container/blob/master/examples/postgresql-persistent-template.json
@@ -311,9 +345,7 @@ metadata:
 spec:
   accessModes:
   - ReadWriteOnce
-  resources:ALAKE_NAMESPACE
-
-            # Save Red Hat subscription in
+  resources:
     requests:
       storage: ${POSTGRESQL_VOLUME_CAPACITY}
 ---
@@ -404,43 +436,13 @@ EOF
 	    rm -f $AMQ_STREAMS_INSTALLER
             sed -i 's/namespace: .*/namespace: ${DATALAKE_NAMESPACE}/' amq-streams-installer/install/cluster-operator/*RoleBinding*.yaml
             oc apply -f amq-streams-installer/install/cluster-operator
-            rm -f amq-streams-installer
+            rm -rf amq-streams-installer
 
-            cat <<EOF | kubectl apply -n $DATALAKE_NAMESPACE -f -
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: kafka-deployment
-  labels:
-    name: kafka-deployment
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      name: kafka-deployment
-  strategy:
-    type: Recreate
-  template:
-    metadata:
-      labels:
-        name: kafka-deployment
-    spec:
-      containers:
-      - image: registry.redhat.io/amq7/amq-streams-kafka-32-rhel8:2.2.0-9
-        imagePullPolicy: Always
-        name: amq-kafka
-      restartPolicy: Always
-      imagePullSecrets:
-        - name: redhat-registry
-EOF
+	    kubectl patch serviceaccount -n ${DATALAKE_NAMESPACE} default -p '{"imagePullSecrets": [{"name": "redhat-registry"}]}'
+            kubectl patch serviceaccount -n ${DATALAKE_NAMESPACE} strimzi-cluster-operator -p '{"imagePullSecrets": [{"name": "redhat-registry"}]}'
+            kubectl patch serviceaccount -n ${DATALAKE_NAMESPACE} kafka-bridge-bridge -p '{"imagePullSecrets": [{"name": "redhat-registry"}]}'
             ;;
         esac
-
-        kubectl patch serviceaccount -n ${DATALAKE_NAMESPACE} default -p '{"imagePullSecrets": [{"name": "redhat-registry"}]}'
-        kubectl patch serviceaccount -n ${DATALAKE_NAMESPACE} ${KAFKA_CLUSTER}-zookeeper -p '{"imagePullSecrets": [{"name": "redhat-registry"}]}'
-        kubectl patch serviceaccount -n ${DATALAKE_NAMESPACE} strimzi-cluster-operator -p '{"imagePullSecrets": [{"name": "redhat-registry"}]}'
-	kubectl patch serviceaccount -n ${DATALAKE_NAMESPACE} kafka-bridge-bridge -p '{"imagePullSecrets": [{"name": "redhat-registry"}]}'
-	kubectl patch serviceaccount -n ${DATALAKE_NAMESPACE} ${KAFKA_CLUSTER}-streams-entity-operator -p '{"imagePullSecrets": [{"name": "redhat-registry"}]}'
 
 	# Install MongoDB
         cat <<EOF | kubectl apply -n $DATALAKE_NAMESPACE -f -
@@ -572,7 +574,7 @@ spec:
     retention.ms: 604800000
     segment.bytes: 1073741824
 ---
-apiVersion: kafka.strimzi.io/v1alpha1
+apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaBridge
 metadata:
   name: kafka-bridge
@@ -584,6 +586,15 @@ spec:
   http:
     port: 8090
 EOF
+
+        case "$kubernetes_environment" in
+        1 ) # OpenShift
+            ;;
+        2 ) # k8s
+	    kubectl patch serviceaccount -n ${DATALAKE_NAMESPACE} ${KAFKA_CLUSTER}-zookeeper -p '{"imagePullSecrets": [{"name": "redhat-registry"}]}'
+            kubectl patch serviceaccount -n ${DATALAKE_NAMESPACE} ${KAFKA_CLUSTER}-streams-entity-operator -p '{"imagePullSecrets": [{"name": "redhat-registry"}]}'
+            ;;
+        esac
 
         cat <<EOF | kubectl apply -n $DATALAKE_NAMESPACE -f -
 apiVersion: batch/v1
@@ -637,9 +648,6 @@ metadata:
   labels:
     app: weather-history-producer
 spec:
-  selector:
-    matchLabels:
-      app: weather-history-producer
   template:
     metadata:
       labels:
@@ -648,6 +656,7 @@ spec:
       containers:
       - name: weather-history-producer
         image: quay.io/nataliejann/kafkaproducers:weatherhistoryproducer
+      restartPolicy: OnFailure
 ---
 apiVersion: batch/v1
 kind: Job
@@ -656,9 +665,6 @@ metadata:
   labels:
     app: stock-history-producer
 spec:
-  selector:
-    matchLabels:
-      app: stock-history-producer
   template:
     metadata:
       labels:
@@ -667,13 +673,14 @@ spec:
       containers:
       - name: stock-history-producer
         image: quay.io/nataliejann/kafkaproducers:stockhistoryproducer
+      restartPolicy: OnFailure
 EOF
 
 	####################
         # Initialize Data Basis
 
 	# Initialize PostgreSQL
-	DATA_FILE=HistoricalData_Apple.csv
+	DATA_FILE=HistoricalDataApple.csv
         wget https://ibm.box.com/shared/static/89i7cxkeok6ndd0kh6q2ycvviip94eby.csv -O $DATA_FILE
         sed -i 's/\$//g' $DATA_FILE
         cat > init-stock-prices.sql <<EOF
@@ -755,45 +762,24 @@ EOF
 
         kubectl exec -n $DATALAKE_NAMESPACE $MONGODB_POD -- bash -c "mkdir /tmp/mongodb && tar --strip-components=1 -zxf mongodb-database-tools-*.tgz -C /tmp/mongodb && /tmp/mongodb/bin/mongoimport -d ${MONGODB_DATABASE} -c weatherny --type csv --columnsHaveTypes --file /tmp/${WEATHER_FILE} --headerline --username ${DATALAKE_USER} --password ${DATALAKE_PASS} --authenticationDatabase admin && /tmp/mongodb/bin/mongoimport -d ${MONGODB_DATABASE} -c schemadef --file /tmp/${SCHEMA_FILE} --username ${DATALAKE_USER} --password ${DATALAKE_PASS} --authenticationDatabase admin && mongo -u ${DATALAKE_USER} -p ${DATALAKE_PASS} --authenticationDatabase admin ${MONGODB_DATABASE} /tmp/${MONGO_USER_FILE}"
 	
-	rm -f $WEATHER_FILE $SCHEMA_FILE $MONGO_USER_FILE
+	rm -f $WEATHER_FILE $SCHEMA_FILE $MONGO_USER_FILE $DATABASE_TOOLS
         ;;
   * ) ;;
-esac
-
-
-# Configure service mesh
-while ! oc kustomize $KUBEFLOW_KUSTOMIZE/servicemesh | oc apply --kustomize $KUBEFLOW_KUSTOMIZE/servicemesh; do echo -e "Retrying to apply resources for Service Mesh..."; sleep 10; done
-oc wait --for=condition=available --timeout=600s deployment/istiod-kubeflow -n istio-system
-
-# Deploy Kubeflow
-while ! oc kustomize $KUBEFLOW_KUSTOMIZE | oc apply --kustomize $KUBEFLOW_KUSTOMIZE; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
-
-oc wait --for=condition=available --timeout=600s deployment/centraldashboard -n kubeflow
-
-oc project kubeflow
-#############################################
-;;
-2 ) # k8s
-
-# Deploy Kubeflow
-while ! kubectl kustomize $KUBEFLOW_KUSTOMIZE | kubectl apply --kustomize $KUBEFLOW_KUSTOMIZE; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
-
-# Ensure istio is up and side-cars are injected into kubeflow namespace afterwards (by restarting pods)
-kubectl wait --for=condition=available --timeout=600s deployment/istiod -n istio-system
-kubectl delete pod --all -n kubeflow
-kubectl delete pod --all -n kubeflow-user-example-com
-kubectl wait --for=condition=available --timeout=600s deployment/centraldashboard -n kubeflow
-;;
 esac
 
 ###########################################################################################################################
 # 4. Install Trino
 case "$install_trino" in
-  y|Y ) kubectl create namespace trino 
+  y|Y ) kubectl create namespace trino
+	
+	TRINO_GIT=$GIT/charts
+	TRINO_CHARTS=$TRINO_GIT/charts
 
-        cd $GIT
-        git clone https://github.com/trinodb/charts.git
-        cd charts/charts
+	if [ -d "$TRINO_GIT" ]; then
+            echo "Warning: $TRINO_GIT already exists; skipping git clone."
+        else
+            git clone https://github.com/trinodb/charts.git $TRINO_GIT
+        fi
 
         cat >> trino-catalogs.txt <<EOF
 additionalCatalogs:
@@ -817,8 +803,8 @@ additionalCatalogs:
     decimal-mapping=allow_overflow
     decimal-rounding-mode=HALF_UP
 EOF
-        sed -i "/additionalCatalogs: {}/r trino-catalogs.txt" trino/values.yaml
-        sed -i "/additionalCatalogs: {}/d" trino/values.yaml
+        sed -i "/additionalCatalogs: {}/r trino-catalogs.txt" $TRINO_CHARTS/trino/values.yaml
+        sed -i "/additionalCatalogs: {}/d" $TRINO_CHARTS/trino/values.yaml
         rm -f trino-catalogs.txt
 
 	cat >> trino-kafka-table.txt <<'EOF'
@@ -922,11 +908,11 @@ EOF
         }
       }
 EOF
-        sed -i "/  tableDescriptions: {}/r trino-kafka-table.txt" trino/values.yaml
-        sed -i "/  tableDescriptions: {}/d" trino/values.yaml
+        sed -i "/  tableDescriptions: {}/r trino-kafka-table.txt" $TRINO_CHARTS/trino/values.yaml
+        sed -i "/  tableDescriptions: {}/d" $TRINO_CHARTS/trino/values.yaml
         rm -f trino-kafka-table.txt
 
-	helm install -n trino trino ./trino
+	helm upgrade --install -n trino trino $TRINO_CHARTS/trino
 
         ;;
   * ) ;;
