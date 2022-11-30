@@ -91,4 +91,31 @@ Force-Delete buggy CRD:
 ```
 kubectl patch crd/servicemeshmembers.maistra.io -p '{"metadata":{"finalizers":[]}}' --type=merge
 ```
+## failed calling webhook "webhook.cert-manager.io"
 
+### Symptoms
+When installing Kubeflow, you get messages like this:
+```
+Error from server (InternalError): error when creating "/opt/kubeflow/git/kubeflow-ppc64le-manifests/overlays/openshift": Internal error occurred: failed calling webhook "webhook.cert-manager.io": failed to call webhook: Post "https://cert-manager-webhook.cert-manager.svc:443/mutate?timeout=10s": x509: certificate signed by unknown authority
+```
+
+### Diagnosis
+```
+oc logs -n cert-manager cert-manager-***
+```
+gives
+```
+E1130 16:41:00.253828    1 leaderelection.go:325] error retrieving resource lock kube-system/cert-manager-controller: configmaps "cert-manager-controller" is forbidden: User "system:serviceaccount:cert-manager:cert-manager" cannot get resource "configmaps" in API group "" in the namespace "kube-system"
+```
+
+```
+oc logs -n cert-manager cert-manager-cainjector-***
+```
+gives something similar but for service account ```cert-manager-cainjector```.
+
+### Treatment
+HotFix (not recommended for production; determine more fine-grained policies):
+```
+oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:cert-manager:cert-manager
+oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:cert-manager:cert-manager-cainjector
+```
