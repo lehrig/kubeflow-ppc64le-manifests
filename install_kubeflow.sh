@@ -238,6 +238,9 @@ case "$install_operators" in
         # TODO: Try from OperatorHub (when Kubeflow supports higher cert-manager versions)
 	oc create namespace cert-manager
         oc apply -n cert-manager -f https://github.com/jetstack/cert-manager/releases/download/v1.5.4/cert-manager.yaml
+        oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:cert-manager:cert-manager
+        #oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:cert-manager:cert-manager-webhook
+        oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:cert-manager:cert-manager-cainjector  
 
         # Install subscriptions (operators from OperatorHub)
         while ! oc kustomize $KUBEFLOW_KUSTOMIZE/subscriptions | oc apply --kustomize $KUBEFLOW_KUSTOMIZE/subscriptions; do echo -e "Retrying to apply resources for Cert Manager..."; sleep 10; done
@@ -706,7 +709,7 @@ EOF
         kubectl -n $DATALAKE_NAMESPACE wait --for=condition=Ready --timeout=60s pod/postgresql-1-deploy
         POSTGRESQL_POD=$(kubectl get po -n $DATALAKE_NAMESPACE -l name=$POSTGRESQL_SERVICE -o jsonpath={..metadata.name})
 	echo $POSTGRESQL_POD
-	sleep 60s
+	sleep 120s
 	kubectl cp -n $DATALAKE_NAMESPACE $DATA_FILE "$POSTGRESQL_POD:/tmp/"
 	kubectl cp -n $DATALAKE_NAMESPACE init-stock-prices.sql "$POSTGRESQL_POD:/tmp/"
 	kubectl exec -n $DATALAKE_NAMESPACE $POSTGRESQL_POD -- psql -U $DATALAKE_USER -d $POSTGRESQL_DATABASE -a -f /tmp/init-stock-prices.sql
@@ -717,7 +720,7 @@ EOF
         WEATHER_FILE=weather_ny_2012-2022.csv
         wget https://ibm.box.com/shared/static/3tgm9bwxsl8tjezk0jgfjvk48cma46li.csv -O $WEATHER_FILE
 	SCHEMA_FILE=mongo-schema-definition.json
-	cat > $SCHEMA_FILE <<EOF
+        cat > $SCHEMA_FILE <<EOF
 {
     "table": "weatherny",
     "fields": [
@@ -761,20 +764,18 @@ db.createUser(
     roles: [ { role: "dbOwner", db: "${MONGODB_DATABASE}" } ]
   }
 )
-EOF  
-        cat $MONGO_USER_FILE
+EOF
         DATABASE_TOOLS=database_tools.tgz
 	wget https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu1804-ppc64le-100.6.1.tgz -O $DATABASE_TOOLS
 	kubectl -n $DATALAKE_NAMESPACE wait --for=condition=available --timeout=60s deploy/mongodb
 	MONGODB_POD=$(kubectl get po -n $DATALAKE_NAMESPACE -l name=$MONGODB_SERVICE -o jsonpath={..metadata.name})
-        echo $MONGODB_POD
 	sleep 30s
         kubectl cp -n $DATALAKE_NAMESPACE $DATABASE_TOOLS "$MONGODB_POD":/tmp/
-        kubectl cp -n $DATALAKE_NAMESPACE $WEATHER_FILE "$MONGODB_POD":/tmp/
+        kubectl cp -n $DATALAKE_NAMESPACE $SCHEMA_FILE "$MONGODB_POD":/tmp/
         kubectl cp -n $DATALAKE_NAMESPACE $MONGO_USER_FILE "$MONGODB_POD":/tmp/
 
         kubectl exec -n $DATALAKE_NAMESPACE $MONGODB_POD -- bash -c "mkdir -p /tmp/mongodb && tar --strip-components=1 -zxf /tmp/${DATABASE_TOOLS} -C /tmp/mongodb && /tmp/mongodb/bin/mongoimport -d ${MONGODB_DATABASE} -c weatherny --type csv --columnsHaveTypes --file /tmp/${WEATHER_FILE} --headerline --username admin --password admin --authenticationDatabase admin && /tmp/mongodb/bin/mongoimport -d ${MONGODB_DATABASE} -c schemadef --file /tmp/${SCHEMA_FILE} --username admin --password admin --authenticationDatabase admin && mongo -u admin -p admin --authenticationDatabase admin ${MONGODB_DATABASE} /tmp/${MONGO_USER_FILE}"
-	
+	echo "added mongo file"
 	rm -f $WEATHER_FILE $SCHEMA_FILE $MONGO_USER_FILE $DATABASE_TOOLS
         ;;
   * ) ;;
@@ -787,7 +788,7 @@ case "$install_trino" in
 	
 	TRINO_GIT=$GIT/charts
 	TRINO_CHARTS=$TRINO_GIT/charts
-
+	
 	if [ -d "$TRINO_GIT" ]; then
             echo "Warning: $TRINO_GIT already exists; skipping git clone."
         else
