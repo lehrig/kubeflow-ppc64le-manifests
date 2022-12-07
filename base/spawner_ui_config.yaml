@@ -17,12 +17,10 @@
 spawnerFormDefaults:
   image:
     # The container Image for the user's Jupyter Notebook
-    value: quay.io/ibm/kubeflow-notebook-image-ppc64le:elyra3.11.1-py3.8-tf2.8.1-v0
+    value: quay.io/ibm/kubeflow-notebook-image-ppc64le:elyra3.13.0-py3.8-tf2.9.2-pt1.12.1-v0
     # The list of available standard container Images
     options:
-    - quay.io/ibm/kubeflow-notebook-image-ppc64le:elyra3.11.1-py3.8-tf2.8.1-v0
-    - quay.io/ibm/kubeflow-notebook-image-ppc64le:elyra3.9.1-py3.8-pytorch-cpu1.10.2
-    - quay.io/ibm/kubeflow-notebook-image-ppc64le:elyra3.9.1-py3.8-pytorch-gpu1.10.2
+    - quay.io/ibm/kubeflow-notebook-image-ppc64le:elyra3.13.0-py3.8-tf2.9.2-pt1.12.1-v0
   imageGroupOne:
     # The container Image for the user's Group One Server
     # The annotation `notebooks.kubeflow.org/http-rewrite-uri: /`
