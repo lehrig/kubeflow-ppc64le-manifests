@@ -449,12 +449,12 @@ EOF
             mv install amq-streams-installer
 	    rm -f $AMQ_STREAMS_INSTALLER
             sed -i 's/namespace: .*/namespace: ${DATALAKE_NAMESPACE}/' amq-streams-installer/install/cluster-operator/*RoleBinding*.yaml
-            oc apply -f amq-streams-installer/install/cluster-operator
+	    echo -e "imagePullSecrets:\n  - name: redhat-registry" >> amq-streams-installer/install/cluster-operator/010-ServiceAccount-strimzi-cluster-operator.yaml
+	    kubectl apply -n ${DATALAKE_NAMESPACE} -f amq-streams-installer/install/cluster-operator
             rm -rf amq-streams-installer
-
+            
 	    kubectl patch serviceaccount -n ${DATALAKE_NAMESPACE} default -p '{"imagePullSecrets": [{"name": "redhat-registry"}]}'
-            kubectl patch serviceaccount -n ${DATALAKE_NAMESPACE} strimzi-cluster-operator -p '{"imagePullSecrets": [{"name": "redhat-registry"}]}'
-            kubectl patch serviceaccount -n ${DATALAKE_NAMESPACE} kafka-bridge-bridge -p '{"imagePullSecrets": [{"name": "redhat-registry"}]}'
+            kubectl create clusterrolebinding -n ${DATALAKE_NAMESPACE} default-pod --clusterrole cluster-admin --serviceaccount=datalake:strimzi-cluster-operator
             ;;
         esac
 
@@ -597,15 +597,99 @@ spec:
     port: 8090
 EOF
 
-        case "$kubernetes_environment" in
-        1 ) # OpenShift
-            ;;
-        2 ) # k8s
-	    kubectl patch serviceaccount -n ${DATALAKE_NAMESPACE} ${KAFKA_CLUSTER}-zookeeper -p '{"imagePullSecrets": [{"name": "redhat-registry"}]}'
-            kubectl patch serviceaccount -n ${DATALAKE_NAMESPACE} ${KAFKA_CLUSTER}-streams-entity-operator -p '{"imagePullSecrets": [{"name": "redhat-registry"}]}'
-            ;;
-        esac
+	####################
+        # Initialize Data Basis
 
+	# Initialize PostgreSQL
+	DATA_FILE=HistoricalDataApple.csv
+        wget https://ibm.box.com/shared/static/89i7cxkeok6ndd0kh6q2ycvviip94eby.csv -O $DATA_FILE
+        sed -i 's/\$//g' $DATA_FILE
+        cat > init-stock-prices.sql <<EOF
+CREATE TABLE IF NOT EXISTS public.applehistory
+(
+    "Date" date NOT NULL,
+    "Close" real,
+    "Volume" bigint,
+    "Open" real,
+    "High" real,
+    "Low" real,
+    CONSTRAINT "appleHistory_pkey" PRIMARY KEY ("Date")
+);
+\copy public.applehistory FROM '/tmp/$DATA_FILE' WITH (FORMAT csv, HEADER true, DELIMITER ',');
+EOF
+        sleep 120s
+        POSTGRESQL_POD=$(kubectl get po -n $DATALAKE_NAMESPACE -l name=$POSTGRESQL_SERVICE -o jsonpath={..metadata.name})
+	echo $POSTGRESQL_POD
+	kubectl cp -n $DATALAKE_NAMESPACE $DATA_FILE "$POSTGRESQL_POD:/tmp/"
+	kubectl cp -n $DATALAKE_NAMESPACE init-stock-prices.sql "$POSTGRESQL_POD:/tmp/"
+	kubectl exec -n $DATALAKE_NAMESPACE $POSTGRESQL_POD -- psql -U $DATALAKE_USER -d $POSTGRESQL_DATABASE -a -f /tmp/init-stock-prices.sql
+
+        rm -f $DATA_FILE init-stock-prices.sql
+
+	# Initialize MongoDB
+        WEATHER_FILE=weather_ny_2012-2022.csv
+        wget https://ibm.box.com/shared/static/3tgm9bwxsl8tjezk0jgfjvk48cma46li.csv -O $WEATHER_FILE
+	SCHEMA_FILE=mongo-schema-definition.json
+        cat > $SCHEMA_FILE <<EOF
+{
+    "table": "weatherny",
+    "fields": [
+        {"name": "_id",
+         "type": "date",
+         "hidden": false },
+        {"name": "AWND",
+         "type": "DOUBLE",
+         "hidden": false },
+        {"name": "PGTM",
+         "type": "DOUBLE",
+         "hidden": false },
+        {"name": "PRCP",
+         "type": "DOUBLE",
+         "hidden": false },
+        {"name": "SNOW",
+         "type": "DOUBLE",
+         "hidden": false },
+        {"name": "SNWD",
+         "type": "DOUBLE",
+         "hidden": false },
+        {"name": "TAVG",
+         "type": "DOUBLE",
+         "hidden": false },
+        {"name": "TMAX",
+         "type": "DOUBLE",
+         "hidden": false },
+        {"name": "TMIN",
+         "type": "DOUBLE",
+         "hidden": false }
+    ]
+}
+EOF
+        # Each database has to have a dedicated user
+        MONGO_USER_FILE=create-mongo-user.mongodb
+        cat > $MONGO_USER_FILE <<EOF
+db.createUser(
+  {
+    user: "${DATALAKE_USER}",
+    pwd: "${DATALAKE_PASS}",
+    roles: [ { role: "dbOwner", db: "${MONGODB_DATABASE}" } ]
+  }
+)
+EOF
+        DATABASE_TOOLS=database_tools.tgz
+	wget https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu1804-ppc64le-100.6.1.tgz -O $DATABASE_TOOLS
+	kubectl -n $DATALAKE_NAMESPACE wait --for=condition=available --timeout=60s deploy/mongodb
+	MONGODB_POD=$(kubectl get po -n $DATALAKE_NAMESPACE -l name=$MONGODB_SERVICE -o jsonpath={..metadata.name})
+	sleep 30s
+	echo $MONGODB_POD
+        kubectl cp -n $DATALAKE_NAMESPACE $DATABASE_TOOLS "$MONGODB_POD":/tmp/
+        kubectl cp -n $DATALAKE_NAMESPACE $SCHEMA_FILE "$MONGODB_POD":/tmp/
+	kubectl cp -n $DATALAKE_NAMESPACE $WEATHER_FILE "$MONGODB_POD":/tmp/
+        kubectl cp -n $DATALAKE_NAMESPACE $MONGO_USER_FILE "$MONGODB_POD":/tmp/
+        echo "copied files to mongodb pod"
+        kubectl exec -n $DATALAKE_NAMESPACE $MONGODB_POD -- bash -c "mkdir -p /tmp/mongodb && tar --strip-components=1 -zxf /tmp/${DATABASE_TOOLS} -C /tmp/mongodb && /tmp/mongodb/bin/mongoimport -d ${MONGODB_DATABASE} -c weatherny --type csv --columnsHaveTypes --file /tmp/${WEATHER_FILE} --headerline --username admin --password admin --authenticationDatabase admin && /tmp/mongodb/bin/mongoimport -d ${MONGODB_DATABASE} -c schemadef --file /tmp/${SCHEMA_FILE} --username admin --password admin --authenticationDatabase admin && mongo -u admin -p admin --authenticationDatabase admin ${MONGODB_DATABASE} /tmp/${MONGO_USER_FILE}"
+	echo "added mongo file"
+	rm -f $WEATHER_FILE $SCHEMA_FILE $MONGO_USER_FILE $DATABASE_TOOLS
+        
         cat <<EOF | kubectl apply -n $DATALAKE_NAMESPACE -f -
 apiVersion: batch/v1
 kind: CronJob
@@ -684,100 +768,8 @@ spec:
       - name: stock-history-producer
         image: quay.io/nataliejann/kafkaproducers:stockhistoryproducer
       restartPolicy: OnFailure
-EOF
-
-	####################
-        # Initialize Data Basis
-
-	# Initialize PostgreSQL
-	DATA_FILE=HistoricalDataApple.csv
-        wget https://ibm.box.com/shared/static/89i7cxkeok6ndd0kh6q2ycvviip94eby.csv -O $DATA_FILE
-        sed -i 's/\$//g' $DATA_FILE
-        cat > init-stock-prices.sql <<EOF
-CREATE TABLE IF NOT EXISTS public.applehistory
-(
-    "Date" date NOT NULL,
-    "Close" real,
-    "Volume" bigint,
-    "Open" real,
-    "High" real,
-    "Low" real,
-    CONSTRAINT "appleHistory_pkey" PRIMARY KEY ("Date")
-);
-\copy public.applehistory FROM '/tmp/$DATA_FILE' WITH (FORMAT csv, HEADER true, DELIMITER ',');
-EOF
-        kubectl -n $DATALAKE_NAMESPACE wait --for=condition=Ready --timeout=60s pod/postgresql-1-deploy
-        POSTGRESQL_POD=$(kubectl get po -n $DATALAKE_NAMESPACE -l name=$POSTGRESQL_SERVICE -o jsonpath={..metadata.name})
-	echo $POSTGRESQL_POD
-	sleep 120s
-	kubectl cp -n $DATALAKE_NAMESPACE $DATA_FILE "$POSTGRESQL_POD:/tmp/"
-	kubectl cp -n $DATALAKE_NAMESPACE init-stock-prices.sql "$POSTGRESQL_POD:/tmp/"
-	kubectl exec -n $DATALAKE_NAMESPACE $POSTGRESQL_POD -- psql -U $DATALAKE_USER -d $POSTGRESQL_DATABASE -a -f /tmp/init-stock-prices.sql
-
-        rm -f $DATA_FILE init-stock-prices.sql
-
-	# Initialize MongoDB
-        WEATHER_FILE=weather_ny_2012-2022.csv
-        wget https://ibm.box.com/shared/static/3tgm9bwxsl8tjezk0jgfjvk48cma46li.csv -O $WEATHER_FILE
-	SCHEMA_FILE=mongo-schema-definition.json
-        cat > $SCHEMA_FILE <<EOF
-{
-    "table": "weatherny",
-    "fields": [
-        {"name": "_id",
-         "type": "date",
-         "hidden": false },
-        {"name": "AWND",
-         "type": "DOUBLE",
-         "hidden": false },
-        {"name": "PGTM",
-         "type": "DOUBLE",
-         "hidden": false },
-        {"name": "PRCP",
-         "type": "DOUBLE",
-         "hidden": false },
-        {"name": "SNOW",
-         "type": "DOUBLE",
-         "hidden": false },
-        {"name": "SNWD",
-         "type": "DOUBLE",
-         "hidden": false },
-        {"name": "TAVG",
-         "type": "DOUBLE",
-         "hidden": false },
-        {"name": "TMAX",
-         "type": "DOUBLE",
-         "hidden": false },
-        {"name": "TMIN",
-         "type": "DOUBLE",
-         "hidden": false }
-    ]
-}
-EOF
-        # Each database has to have a dedicated user
-        MONGO_USER_FILE=create-mongo-user.mongodb
-        cat > $MONGO_USER_FILE <<EOF
-db.createUser(
-  {
-    user: "${DATALAKE_USER}",
-    pwd: "${DATALAKE_PASS}",
-    roles: [ { role: "dbOwner", db: "${MONGODB_DATABASE}" } ]
-  }
-)
-EOF
-        DATABASE_TOOLS=database_tools.tgz
-	wget https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu1804-ppc64le-100.6.1.tgz -O $DATABASE_TOOLS
-	kubectl -n $DATALAKE_NAMESPACE wait --for=condition=available --timeout=60s deploy/mongodb
-	MONGODB_POD=$(kubectl get po -n $DATALAKE_NAMESPACE -l name=$MONGODB_SERVICE -o jsonpath={..metadata.name})
-	sleep 30s
-        kubectl cp -n $DATALAKE_NAMESPACE $DATABASE_TOOLS "$MONGODB_POD":/tmp/
-        kubectl cp -n $DATALAKE_NAMESPACE $SCHEMA_FILE "$MONGODB_POD":/tmp/
-        kubectl cp -n $DATALAKE_NAMESPACE $MONGO_USER_FILE "$MONGODB_POD":/tmp/
-
-        kubectl exec -n $DATALAKE_NAMESPACE $MONGODB_POD -- bash -c "mkdir -p /tmp/mongodb && tar --strip-components=1 -zxf /tmp/${DATABASE_TOOLS} -C /tmp/mongodb && /tmp/mongodb/bin/mongoimport -d ${MONGODB_DATABASE} -c weatherny --type csv --columnsHaveTypes --file /tmp/${WEATHER_FILE} --headerline --username admin --password admin --authenticationDatabase admin && /tmp/mongodb/bin/mongoimport -d ${MONGODB_DATABASE} -c schemadef --file /tmp/${SCHEMA_FILE} --username admin --password admin --authenticationDatabase admin && mongo -u admin -p admin --authenticationDatabase admin ${MONGODB_DATABASE} /tmp/${MONGO_USER_FILE}"
-	echo "added mongo file"
-	rm -f $WEATHER_FILE $SCHEMA_FILE $MONGO_USER_FILE $DATABASE_TOOLS
-        ;;
+EOF	
+	;;
   * ) ;;
 esac
 
