@@ -768,7 +768,7 @@ spec:
       - name: stock-history-producer
         image: quay.io/nataliejann/kafkaproducers:stockhistoryproducer
       restartPolicy: OnFailure
-EOF	
+EOF
 	;;
   * ) ;;
 esac
