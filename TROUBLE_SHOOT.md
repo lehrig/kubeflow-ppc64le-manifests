@@ -91,6 +91,11 @@ Force-Delete buggy CRD:
 ```
 kubectl patch crd/servicemeshmembers.maistra.io -p '{"metadata":{"finalizers":[]}}' --type=merge
 ```
+
+Delete buggy resources:
+```
+kubectl get ingresses.networking.internal.knative.dev --no-headers=true | awk '{print $1}' | xargs kubectl patch -p '{"metadata":{"finalizers":[]}}' --type=merge ingresses.networking.internal.knative.dev
+```
 ## failed calling webhook "webhook.cert-manager.io"
 
 ### Symptoms
