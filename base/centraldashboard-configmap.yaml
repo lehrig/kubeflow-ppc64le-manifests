@@ -78,6 +78,12 @@ data:
           "link": "/minio/",
           "text": "Object Store",
           "icon": "icons:cloud"
+        },
+        {
+          "type": "item",
+          "link": "/grafana/",
+          "text": "Monitoring",
+          "icon": "icons:assessment"
         }
       ],
       "externalLinks": [ ],

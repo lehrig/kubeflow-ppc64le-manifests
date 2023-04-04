@@ -1,0 +1,85 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+ name: bind-ml-pipeline-nb-kubeflow-admin-example-com
+ namespace: kubeflow
+spec:
+ selector:
+   matchLabels:
+     app: ml-pipeline
+ rules:
+ - from:
+   - source:
+       principals: ["cluster.local/ns/kubeflow-admin-example-com/sa/default-editor"]
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: add-header
+  namespace: kubeflow-admin-example-com
+spec:
+  configPatches:
+  - applyTo: VIRTUAL_HOST
+    match:
+      context: SIDECAR_OUTBOUND
+      routeConfiguration:
+        vhost:
+          name: ml-pipeline.kubeflow.svc.cluster.local:8888
+          route:
+            name: default
+    patch:
+      operation: MERGE
+      value:
+        request_headers_to_add:
+        - append: true
+          header:
+            key: kubeflow-userid
+            value: admin@example.com
+---
+apiVersion: kubeflow.org/v1alpha1
+kind: PodDefault
+metadata:
+  name: access-ml-pipeline
+  namespace: kubeflow-admin-example-com
+spec:
+  desc: Allow access to Kubeflow Pipelines
+  selector:
+    matchLabels:
+      access-ml-pipeline: "true"
+  volumes:
+    - name: volume-kf-pipeline-token
+      projected:
+        sources:
+          - serviceAccountToken:
+              path: token
+              expirationSeconds: 7200
+              audience: pipelines.kubeflow.org      
+  volumeMounts:
+    - mountPath: /var/run/secrets/kubeflow/pipelines
+      name: volume-kf-pipeline-token
+      readOnly: true
+  env:
+    - name: KF_PIPELINES_SA_TOKEN_PATH
+      value: /var/run/secrets/kubeflow/pipelines/token
+---
+apiVersion: kubeflow.org/v1alpha1
+kind: PodDefault
+metadata:
+  name: add-minio-secret
+  namespace: kubeflow-admin-example-com
+spec:
+  desc: Allows to access to MinIO, an S3-based object store installed in your Kubeflow cluster
+  selector:
+    matchLabels:
+      add-minio-secret: "true"
+  env:
+    - name: MINIO_ID
+      valueFrom:
+        secretKeyRef:
+          name: mlpipeline-minio-artifact
+          key: accesskey
+    - name: MINIO_PWD
+      valueFrom:
+        secretKeyRef:
+          name: mlpipeline-minio-artifact
+          key: secretkey

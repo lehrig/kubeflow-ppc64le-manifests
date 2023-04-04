@@ -53,7 +53,7 @@ case "$kubernetes_environment" in
       
       clusterDomain=$(oc get ingresses.config/cluster -o jsonpath={.spec.domain})
       echo -e ""
-      read -p "${BOLD}Install OpenShift operators (Cert-Manager, Service Mesh (incl. Elasticsearch, Kiali, Jaeger), Namespace-Configuration, Serverless, Node Feature Discovery, GPU Operator)?${NORMAL} [y]: " install_operators
+      read -p "${BOLD}Install OpenShift operators (Cert-Manager, Service Mesh (incl. Elasticsearch, Kiali, Jaeger), Namespace-Configuration, Serverless, Node Feature Discovery, GPU Operator, Grafana)?${NORMAL} [y]: " install_operators
       install_operators=${install_operators:-y}
       case "$install_operators" in
         y|Y ) ;;
@@ -248,11 +248,15 @@ case "$install_operators" in
         # Configure node feature discovery
         while ! oc kustomize $KUBEFLOW_KUSTOMIZE/nfd | oc apply --kustomize $KUBEFLOW_KUSTOMIZE/nfd; do echo -e "Retrying to apply resources for Node Feature Discovery..."; sleep 10; done
 
-        # Install GPU operator
+        # Install GPU Operator
         oc create namespace gpu-operator
         git clone -b ppc64le_v1.10.1 https://github.com/mgiessing/gpu-operator.git $GIT/gpu-operator
         sed -i 's/use_ocp_driver_toolkit: false/use_ocp_driver_toolkit: true/g' $GIT/gpu-operator/deployments/gpu-operator/values.yaml
         helm install -n gpu-operator --wait --generate-name $GIT/gpu-operator/deployments/gpu-operator
+
+        # Configure Grafana
+        # Note: Prometheus comes with OpenShift out-of-the-box
+        while ! oc kustomize $KUBEFLOW_KUSTOMIZE/grafana | oc apply --kustomize $KUBEFLOW_KUSTOMIZE/grafana; do echo -e "Retrying to apply resources for Grafana..."; sleep 10; done
         ;;
   * ) ;;
 esac
@@ -282,6 +286,7 @@ while ! kubectl kustomize $KUBEFLOW_KUSTOMIZE | kubectl apply --kustomize $KUBEF
 # Ensure istio is up and side-cars are injected into kubeflow namespace afterwards (by restarting pods)
 kubectl wait --for=condition=available --timeout=600s deployment/istiod -n istio-system
 kubectl delete pod --all -n kubeflow
+kubectl delete pod --all -n kubeflow-admin-example-com
 kubectl delete pod --all -n kubeflow-user-example-com
 kubectl wait --for=condition=available --timeout=600s deployment/centraldashboard -n kubeflow
 ;;
@@ -953,7 +958,8 @@ oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:kubef
 # HTPasswd & Default User
 # See: https://computingforgeeks.com/manage-openshift-okd-cluster-users-using-htpasswd-identity-provider/
 yum -y install httpd-tools
-htpasswd -c -B -b $KUBEFLOW_BASE_DIR/ocp_users.htpasswd user@example.com 12341234
+htpasswd -c -B -b $KUBEFLOW_BASE_DIR/ocp_users.htpasswd admin@example.com 12341234
+htpasswd -Bb $KUBEFLOW_BASE_DIR/ocp_users.htpasswd user@example.com 12341234
 oc create secret generic htpass-secret \
   --from-file=htpasswd=$KUBEFLOW_BASE_DIR/ocp_users.htpasswd \
   -n openshift-config
@@ -970,6 +976,9 @@ case "$store_credentials" in
   y|Y ) kubectl create secret docker-registry myregistrykey --docker-server=docker.io --docker-username=$docker_user --docker-password=$docker_pass
         kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "myregistrykey"}]}'
 	
+        kubectl create secret docker-registry myregistrykey -n kubeflow-admin-example-com --docker-server=docker.io --docker-username=$docker_user --docker-password=$docker_pass
+        kubectl patch serviceaccount default-editor -n kubeflow-admin-example-com -p '{"imagePullSecrets": [{"name": "myregistrykey"}]}'
+
 	kubectl create secret docker-registry myregistrykey -n kubeflow-user-example-com --docker-server=docker.io --docker-username=$docker_user --docker-password=$docker_pass
 	kubectl patch serviceaccount default-editor -n kubeflow-user-example-com -p '{"imagePullSecrets": [{"name": "myregistrykey"}]}'
         ;;
@@ -989,7 +998,7 @@ Kubeflow deployed successfully.
 Next:
 1. Go to: $KUBEFLOW_URL
 2. If a custom certificate (e.g, istio-ingressgateway.istio-system.svc) certificate as trusted (or type "thisisunsafe" into your browser)
-3. Login using the default account:
-  - Username: user@example.com
+3. Login using the admin or example user:
+  - Username: admin@example.com | user@example.com
   - Password: 12341234
 POSTINSTALL

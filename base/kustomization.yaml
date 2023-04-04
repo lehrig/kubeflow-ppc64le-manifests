@@ -38,6 +38,7 @@ resources:
 - https://github.com/kubeflow/manifests/contrib/kserve/models-web-app/overlays/kubeflow?ref=v1.6.0
 # IBM
 - minio-virtual-service.yaml
+- grafana
  
 configMapGenerator:
   - name: pipeline-install-config

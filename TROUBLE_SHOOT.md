@@ -119,3 +119,30 @@ HotFix (not recommended for production; determine more fine-grained policies):
 oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:cert-manager:cert-manager
 oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:cert-manager:cert-manager-cainjector
 ```
+
+## Kubernetes resources are missing (e.g., Subscriptions)
+
+### Symptoms
+Trying to get a resource even on all namespaces (e.g., `oc get Subscription -A`) yields:
+```
+No resources found
+```
+Even though it should be there.
+
+### Diagnosis
+Find out the API Group, e.g.:
+```
+kubectl api-resources -o wide | grep -i Subscription
+```
+
+This may give multiple resources with the same name, e.g.:
+```
+subscriptions                         sub                  messaging.knative.dev/v1                      true         Subscription                         [delete deletecollection get list patch create update watch]
+subscriptions                         sub,subs             operators.coreos.com/v1alpha1                 true         Subscription                         [delete deletecollection get list patch create update watch]
+```
+
+### Treatment
+Use fully qualified resource name when getting resources:
+```
+oc get Subscription.operators.coreos.com -A
+```

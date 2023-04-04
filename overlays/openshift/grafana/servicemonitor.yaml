@@ -1,0 +1,21 @@
+# See https://github.com/NVIDIA/gpu-operator/blob/master/assets/state-dcgm-exporter/0700_service_monitor.yaml
+# 
+#
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: nvidia-dcgm-exporter
+  namespace: gpu-operator
+  labels:
+    app: nvidia-dcgm-exporter
+spec:
+  endpoints:
+  - port: gpu-metrics
+    path: "/metrics"
+  jobLabel: app
+  namespaceSelector:
+    matchNames:
+    - gpu-operator
+  selector:
+    matchLabels:
+     app: nvidia-dcgm-exporter
