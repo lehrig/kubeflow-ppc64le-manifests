@@ -3,5 +3,3 @@ kind: Kustomization
 
 resources:
 - serverless-apis.yaml
-- kfserving-auth-policy.yaml
-- kfserving-net-policy.yaml

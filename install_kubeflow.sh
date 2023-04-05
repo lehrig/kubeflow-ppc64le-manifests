@@ -166,6 +166,31 @@ esac
 
 ###########################################################################################################################
 # 2. Prepare Installation
+
+# get kustomize if not there
+if ! command -v kustomize &> /dev/null
+then
+    echo "Kustomize not found - installing to /user/local/bin/..."
+    kustomize_version=5.0.0
+    curl --silent --location --remote-name "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv$kustomize_version/kustomize_v$kustomize_version_linux_ppc64le.tar.gz"
+    tar -xzvf kustomize_v$kustomize_version_linux_ppc64le.tar.gz
+    chmod a+x kustomize
+    sudo mv kustomize /usr/local/bin/kustomize
+    rm -f kustomize_v$kustomize_version_linux_ppc64le.tar.gz
+fi
+
+# get helm if not there
+if ! command -v helm &> /dev/null
+then
+   echo "Helm not found - installing to /user/local/bin/..."
+   helm_version=3.11.2
+   curl --silent --location --remote-name "https://get.helm.sh/helm-v$helm_version-linux-ppc64le.tar.gz"
+   tar --strip-components=1 -xzf helm-v$helm_version-linux-ppc64le.tar.gz ./linux-ppc64le/helm
+   chmod a+x helm
+   sudo mv helm /usr/local/bin/helm
+   rm -f helm-v$helm_version-linux-ppc64le.tar.gz
+fi
+
 case "$store_credentials" in 
   y|Y ) case "$kubernetes_environment" in
         1 ) # Add docker.io account settings into OpenShift secret 
@@ -243,10 +268,10 @@ case "$install_operators" in
         oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:cert-manager:cert-manager-cainjector  
 
         # Install subscriptions (operators from OperatorHub)
-        while ! oc kustomize $KUBEFLOW_KUSTOMIZE/subscriptions | oc apply --kustomize $KUBEFLOW_KUSTOMIZE/subscriptions; do echo -e "Retrying to apply resources for Cert Manager..."; sleep 10; done
+        while ! kustomize build $KUBEFLOW_KUSTOMIZE/subscriptions | awk '!/well-defined/' | oc apply -f -; do echo -e "Retrying to apply resources for Cert Manager..."; sleep 10; done
 
         # Configure node feature discovery
-        while ! oc kustomize $KUBEFLOW_KUSTOMIZE/nfd | oc apply --kustomize $KUBEFLOW_KUSTOMIZE/nfd; do echo -e "Retrying to apply resources for Node Feature Discovery..."; sleep 10; done
+        while ! kustomize build $KUBEFLOW_KUSTOMIZE/nfd | awk '!/well-defined/' | oc apply -f -; do echo -e "Retrying to apply resources for Node Feature Discovery..."; sleep 10; done
 
         # Install GPU Operator
         oc create namespace gpu-operator
@@ -256,16 +281,16 @@ case "$install_operators" in
 
         # Configure Grafana
         # Note: Prometheus comes with OpenShift out-of-the-box
-        while ! oc kustomize $KUBEFLOW_KUSTOMIZE/grafana | oc apply --kustomize $KUBEFLOW_KUSTOMIZE/grafana; do echo -e "Retrying to apply resources for Grafana..."; sleep 10; done
+        while ! kustomize build $KUBEFLOW_KUSTOMIZE/grafana | awk '!/well-defined/' | oc apply -f -; do echo -e "Retrying to apply resources for Grafana..."; sleep 10; done
         ;;
   * ) ;;
 esac
 # Configure service mesh
-while ! oc kustomize $KUBEFLOW_KUSTOMIZE/servicemesh | oc apply --kustomize $KUBEFLOW_KUSTOMIZE/servicemesh; do echo -e "Retrying to apply resources for Service Mesh..."; sleep 10; done
+while ! kustomize build $KUBEFLOW_KUSTOMIZE/servicemesh | awk '!/well-defined/' | oc apply -f -; do echo -e "Retrying to apply resources for Service Mesh..."; sleep 10; done
 oc wait --for=condition=available --timeout=600s deployment/istiod-kubeflow -n istio-system
 
 # Deploy Kubeflow
-while ! oc kustomize $KUBEFLOW_KUSTOMIZE | oc apply --kustomize $KUBEFLOW_KUSTOMIZE; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
+while ! kustomize build $KUBEFLOW_KUSTOMIZE | awk '!/well-defined/' | oc apply -f -; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
 
 oc wait --for=condition=available --timeout=600s deployment/centraldashboard -n kubeflow
 
@@ -281,7 +306,7 @@ echo -e "# Initializing Kubeflow Installation; please wait... #"
 echo -e "######################################################"
 echo -e ""
 
-while ! kubectl kustomize $KUBEFLOW_KUSTOMIZE | kubectl apply --kustomize $KUBEFLOW_KUSTOMIZE; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
+while ! kustomize build $KUBEFLOW_KUSTOMIZE | kubectl apply -f -; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
 
 # Ensure istio is up and side-cars are injected into kubeflow namespace afterwards (by restarting pods)
 kubectl wait --for=condition=available --timeout=600s deployment/istiod -n istio-system

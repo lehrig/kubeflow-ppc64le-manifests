@@ -2,7 +2,7 @@ apiVersion: v1
 data:
   agent: |-
     {
-        "image" : "quay.io/mgiessing/agent:v0.8.0",
+        "image" : "quay.io/ibm/kserve-agent-ppc64le:v0.10.0",
         "memoryRequest": "100Mi",
         "memoryLimit": "1Gi",
         "cpuRequest": "100m",
@@ -10,7 +10,7 @@ data:
     }
   batcher: |-
     {
-        "image" : "quay.io/mgiessing/agent:v0.8.0",
+        "image" : "quay.io/ibm/kserve-agent-ppc64le:v0.10.0",
         "memoryRequest": "1Gi",
         "memoryLimit": "1Gi",
         "cpuRequest": "1",
@@ -24,6 +24,13 @@ data:
        "s3": {
            "s3AccessKeyIDName": "AWS_ACCESS_KEY_ID",
            "s3SecretAccessKeyName": "AWS_SECRET_ACCESS_KEY"
+           "s3Endpoint": "",
+           "s3UseHttps": "",
+           "s3Region": "",
+           "s3VerifySSL": "",
+           "s3UseVirtualBucket": "",
+           "s3UseAnonymousCredential": "",
+           "s3CABundle": ""
        }
     }
   deploy: |-
@@ -47,143 +54,46 @@ data:
     }
   ingress: |-
     {
-        "ingressGateway" : "knative-serving/knative-ingress-gateway",
-        "ingressService" : "istio-ingressgateway.istio-system.svc.cluster.local",
-        "localGateway" : "knative-serving/knative-local-gateway",
-        "localGatewayService" : "knative-local-gateway.istio-system.svc.cluster.local",
-        "ingressDomain"  : "example.com"
+      "ingressGateway": "kubeflow/kubeflow-gateway",
+      "ingressService": "istio-ingressgateway.istio-system.svc.cluster.local",
+      "localGateway": "knative-serving/knative-local-gateway",
+      "localGatewayService": "knative-local-gateway.istio-system.svc.cluster.local",
+      "ingressDomain": "example.com",
+      "ingressClassName": "istio",
+      "domainTemplate": "{{ .Name }}-{{ .Namespace }}.{{ .IngressDomain }}",
+      "urlScheme": "http",
+      "disableIstioVirtualHost": false
     }
   logger: |-
     {
-        "image" : "quay.io/mgiessing/agent:v0.8.0",
+        "image" : "quay.io/ibm/kserve-agent-ppc64le:v0.10.0",
         "memoryRequest": "100Mi",
         "memoryLimit": "1Gi",
         "cpuRequest": "100m",
         "cpuLimit": "1",
         "defaultUrl": "http://default-broker"
     }
-  predictors: |-
+  metricsAggregator: |-
     {
-        "tensorflow": {
-            "image": "quay.io/mgiessing/tensorflow-serving",
-            "defaultImageVersion": "1.14.0",
-            "defaultGpuImageVersion": "1.14.0-gpu",
-            "defaultTimeout": "60",
-            "supportedFrameworks": [
-              "tensorflow"
-            ],
-            "multiModelServer": false
-        },
-        "onnx": {
-            "image": "quay.io/mgiessing/onnxruntime-server",
-            "defaultImageVersion": "v1.0.0",
-            "supportedFrameworks": [
-              "onnx"
-            ],
-            "multiModelServer": false
-        },
-        "sklearn": {
-          "v1": {
-            "image": "quay.io/mgiessing/sklearnserver",
-            "defaultImageVersion": "v0.8.0",
-            "supportedFrameworks": [
-              "sklearn"
-            ],
-            "multiModelServer": true
-          },
-          "v2": {
-            "image": "quay.io/mgiessing/mlserver",
-            "defaultImageVersion": "0.2.1",
-            "supportedFrameworks": [
-              "sklearn"
-            ],
-            "multiModelServer": false
-          }
-        },
-        "xgboost": {
-          "v1": {
-            "image": "quay.io/mgiessing/xgbserver",
-            "defaultImageVersion": "v0.8.0",
-            "supportedFrameworks": [
-              "xgboost"
-            ],
-            "multiModelServer": true
-          },
-          "v2": {
-            "image": "quay.io/mgiessing/mlserver",
-            "defaultImageVersion": "0.2.1",
-            "supportedFrameworks": [
-              "xgboost"
-            ],
-            "multiModelServer": false
-          }
-        },
-        "pytorch": {
-          "v1" : {
-            "image": "quay.io/mgiessing/pytorchserver",
-            "defaultImageVersion": "v0.8.0",
-            "defaultGpuImageVersion": "v0.8.0-gpu",
-            "supportedFrameworks": [
-              "pytorch"
-            ],
-            "multiModelServer": false
-          },
-          "v2" : {
-            "image": "quay.io/mgiessing/torchserve-kfs",
-            "defaultImageVersion": "0.6.0",
-            "defaultGpuImageVersion": "0.6.0-gpu",
-            "supportedFrameworks": [
-              "pytorch"
-            ],
-            "multiModelServer": false
-          }
-        },
-        "triton": {
-            "image": "quay.io/mgiessing/tritonserver",
-            "defaultImageVersion": "22.03-py3",
-            "supportedFrameworks": [
-              "tensorrt",
-              "tensorflow",
-              "onnx",
-              "pytorch"
-            ],
-            "multiModelServer": true
-        },
-        "pmml": {
-            "image": "quay.io/mgiessing/pmmlserver",
-            "defaultImageVersion": "v0.8.0",
-            "supportedFrameworks": [
-              "pmml"
-            ],
-            "multiModelServer": false
-        },
-        "lightgbm": {
-            "image": "quay.io/mgiessing/lgbserver",
-            "defaultImageVersion": "v0.8.0",
-            "supportedFrameworks": [
-              "lightgbm"
-            ],
-            "multiModelServer": false
-        },
-        "paddle": {
-            "image": "quay.io/mgiessing/paddleserver",
-            "defaultImageVersion": "v0.8.0",
-            "supportedFrameworks": [
-              "paddle"
-            ],
-            "multiModelServer": false
-        }
+      "enableMetricAggregation": "false",
+      "enablePrometheusScraping" : "false"
     }
-  storageInitializer: |-
+  router: |-
     {
-        "image" : "quay.io/mgiessing/storage-initializer:v0.8.0",
+        "image" : "quay.io/ibm/kserve-router-ppc64le:v0.10.0",
         "memoryRequest": "100Mi",
         "memoryLimit": "1Gi",
         "cpuRequest": "100m",
         "cpuLimit": "1"
     }
-  transformers: |-
+  storageInitializer: |-
     {
+        "image" : "quay.io/ibm/storage-initializer:v0.10.0",
+        "memoryRequest": "100Mi",
+        "memoryLimit": "1Gi",
+        "cpuRequest": "100m",
+        "cpuLimit": "1"
+        "storageSpecSecretName": "storage-config"
     }
 kind: ConfigMap
 metadata:

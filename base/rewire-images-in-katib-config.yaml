@@ -7,13 +7,13 @@ data:
   metrics-collector-sidecar: |-
     {
       "StdOut": {
-        "image": "quay.io/mgiessing/file-metrics-collector:v0.14.0"
+        "image": "quay.io/mgiessing/file-metrics-collector:v0.15.0"
       },
       "File": {
-        "image": "quay.io/mgiessing/file-metrics-collector:v0.14.0"
+        "image": "quay.io/mgiessing/file-metrics-collector:v0.15.0"
       },
       "TensorFlowEvent": {
-        "image": "quay.io/mgiessing/tfevent-metrics-collector:v0.14.0",
+        "image": "quay.io/mgiessing/tfevent-metrics-collector:v0.15.0",
         "resources": {
           "limits": {
             "memory": "1Gi"
@@ -24,31 +24,31 @@ data:
   suggestion: |-
     {
       "random": {
-        "image": "quay.io/mgiessing/suggestion-hyperopt:v0.14.0"
+        "image": "quay.io/mgiessing/suggestion-hyperopt:v0.15.0"
       },
       "tpe": {
-        "image": "quay.io/mgiessing/suggestion-hyperopt:v0.14.0"
+        "image": "quay.io/mgiessing/suggestion-hyperopt:v0.15.0"
       },
       "grid": {
-        "image": "quay.io/mgiessing/suggestion-chocolate:v0.14.0"
+        "image": "quay.io/mgiessing/suggestion-chocolate:v0.15.0"
       },
       "hyperband": {
-        "image": "quay.io/mgiessing/suggestion-hyperband:v0.14.0"
+        "image": "quay.io/mgiessing/suggestion-hyperband:v0.15.0"
       },
       "bayesianoptimization": {
-        "image": "quay.io/mgiessing/suggestion-skopt:v0.14.0"
+        "image": "quay.io/mgiessing/suggestion-skopt:v0.15.0"
       },
       "cmaes": {
-        "image": "quay.io/mgiessing/suggestion-goptuna:v0.14.0"
+        "image": "quay.io/mgiessing/suggestion-goptuna:v0.15.0"
       },
       "sobol": {
-        "image": "quay.io/mgiessing/suggestion-goptuna:v0.14.0"
+        "image": "quay.io/mgiessing/suggestion-goptuna:v0.15.0"
       },
       "multivariate-tpe": {
-        "image": "quay.io/mgiessing/suggestion-optuna:v0.14.0"
+        "image": "quay.io/mgiessing/suggestion-optuna:v0.15.0"
       },
       "enas": {
-        "image": "quay.io/mgiessing/suggestion-enas:v0.14.0",
+        "image": "quay.io/mgiessing/suggestion-enas:v0.15.0",
         "resources": {
           "limits": {
             "memory": "200Mi"
@@ -56,12 +56,25 @@ data:
         }
       },
       "darts": {
-        "image": "quay.io/mgiessing/suggestion-darts:v0.14.0"
+        "image": "quay.io/mgiessing/suggestion-darts:v0.15.0"
+      }
+      "pbt": {
+        "image": "quay.io/mgiessing/suggestion-pbt:v0.15.0",
+        "persistentVolumeClaimSpec": {
+          "accessModes": [
+            "ReadWriteMany"
+          ],
+          "resources": {
+            "requests": {
+              "storage": "5Gi"
+            }
+          }
+        }
       }
     }
   early-stopping: |-
     {
       "medianstop": {
-        "image": "quay.io/mgiessing/earlystopping-medianstop:v0.14.0"
+        "image": "quay.io/mgiessing/earlystopping-medianstop:v0.15.0"
       }
     }

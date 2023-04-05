@@ -1,0 +1,13 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubeflow-pipelines-profile-controller
+spec:
+  containers:
+    - name: profile-controller
+      env:
+      - name: VISUALIZATION_SERVER_IMAGE
+        value: "quay.io/ibm/kubeflow-visualization-server-ppc64le"
+      - name: FRONTEND_IMAGE
+        value: "quay.io/ibm/kubeflow-frontend-ppc64le"
+

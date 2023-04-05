@@ -85,12 +85,13 @@ echo -e "Initializing uninstall..."
 
 case "$kubernetes_environment" in
 1 ) # OpenShift
-
+oc delete --all -A inferenceservices.serving.kserve.io 
 oc delete --kustomize $KUBEFLOW_KUSTOMIZE
 oc delete --kustomize $KUBEFLOW_KUSTOMIZE/servicemesh
 #############################################
 ;;
 2 ) # k8s
+kubectl delete --all -A inferenceservices.serving.kserve.io
 kubectl delete --kustomize $KUBEFLOW_KUSTOMIZE
 ;;
 esac
