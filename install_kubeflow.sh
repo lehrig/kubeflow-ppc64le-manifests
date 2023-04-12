@@ -224,7 +224,7 @@ EOF
         1 ) # OpenShift
 	kube_pw=$(cat $kubeadmin_file)
 cat >> /root/.bashrc <<EOF
-export clusterDomain=$clusterDomain
+export CLUSTER_DOMAIN=$clusterDomain
 export KUBEFLOW_KUSTOMIZE=$manifests/overlays/openshift
 export KUBE_PW=$kube_pw
 oc login -u kubeadmin -p $kube_pw --insecure-skip-tls-verify=true > /dev/null
@@ -232,7 +232,7 @@ EOF
             ;;
         2 ) # k8s
 cat >> /root/.bashrc <<EOF
-export externalIpAddress=$externalIpAddress
+export EXTERNAL_IP_ADDRESS=$externalIpAddress
 export KUBEFLOW_KUSTOMIZE=$manifests/overlays/k8s
 EOF
             ;;
@@ -281,16 +281,16 @@ case "$install_operators" in
 
         # Configure Grafana
         # Note: Prometheus comes with OpenShift out-of-the-box
-        while ! kustomize build $KUBEFLOW_KUSTOMIZE/grafana | awk '!/well-defined/' | oc apply -f -; do echo -e "Retrying to apply resources for Grafana..."; sleep 10; done
+	oc apply overlays/openshift/grafana/enable-user-workload.yaml
         ;;
   * ) ;;
 esac
 # Configure service mesh
-while ! kustomize build $KUBEFLOW_KUSTOMIZE/servicemesh | awk '!/well-defined/' | oc apply -f -; do echo -e "Retrying to apply resources for Service Mesh..."; sleep 10; done
+while ! kustomize build $KUBEFLOW_KUSTOMIZE/servicemesh | envsubst | awk '!/well-defined/' | oc apply -f -; do echo -e "Retrying to apply resources for Service Mesh..."; sleep 10; done
 oc wait --for=condition=available --timeout=600s deployment/istiod-kubeflow -n istio-system
 
 # Deploy Kubeflow
-while ! kustomize build $KUBEFLOW_KUSTOMIZE | awk '!/well-defined/' | oc apply -f -; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
+while ! kustomize build $KUBEFLOW_KUSTOMIZE | envsubst | awk '!/well-defined/' | oc apply -f -; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
 
 oc wait --for=condition=available --timeout=600s deployment/centraldashboard -n kubeflow
 
@@ -306,7 +306,7 @@ echo -e "# Initializing Kubeflow Installation; please wait... #"
 echo -e "######################################################"
 echo -e ""
 
-while ! kustomize build $KUBEFLOW_KUSTOMIZE | kubectl apply -f -; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
+while ! kustomize build $KUBEFLOW_KUSTOMIZE | envsubst | awk '!/well-defined/' | kubectl apply -f -; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
 
 # Ensure istio is up and side-cars are injected into kubeflow namespace afterwards (by restarting pods)
 kubectl wait --for=condition=available --timeout=600s deployment/istiod -n istio-system

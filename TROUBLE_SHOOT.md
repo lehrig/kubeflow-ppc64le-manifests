@@ -151,3 +151,60 @@ Use fully qualified resource name when getting resources:
 ```
 oc get Subscription.operators.coreos.com -A
 ```
+
+## Training Operator in CrashLoopBackOff
+
+### Symptoms
+
+```
+oc get po -n kubeflow
+```
+
+gives:
+
+```
+training-operator-...   0/1     CrashLoopBackOff
+```
+
+### Diagnosis
+
+If ```oc describe``` and ```oc logs``` don't indicate something specific, success thresholds may be too low - see https://github.com/kubeflow/training-operator/pull/1568/files.
+
+### Treatment
+
+```
+oc edit deploy training-operator
+```
+
+..and increase ```initialDelaySeconds```, ```periodSeconds```, and ```timeoutSeconds``` for ```livenessProbe``` and ```readinessProbe```.
+
+## Local Password / htpasswd login fails
+
+### Symptoms
+
+Even after 2 login attemps, login fails
+
+### Diagnosis
+
+There might be a left-over from a previous user. Check that these resources look correct:
+
+
+```
+oc get Users
+```
+
+and
+
+```
+oc get Identity
+```
+
+### Treatment
+
+Delete incorrect resources, e.g.:
+
+```
+oc delete identity "Local Password:user@example.com"
+```
+
+See: https://docs.openshift.com/container-platform/4.12/authentication/identity_providers/configuring-htpasswd-identity-provider.html#identity-provider-htpasswd-update-users_configuring-htpasswd-identity-provider

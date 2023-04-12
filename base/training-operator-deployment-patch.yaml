@@ -10,3 +10,11 @@ spec:
           command:
             - /manager
             - --mpi-kubectl-delivery-image=quay.io/ibm/mpioperator-kubectl-delivery:v0.3.0
+          livenessProbe:
+            initialDelaySeconds: 30
+            periodSeconds: 40
+            timeoutSeconds: 6
+          readinessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            timeoutSeconds: 6
