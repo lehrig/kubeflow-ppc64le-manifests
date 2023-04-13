@@ -87,16 +87,16 @@ configMapGenerator:
     literals:
       - TENSORBOARD_IMAGE=quay.io/mgiessing/tensorflow:2.5.1
 
-patchesStrategicMerge:
-- centraldashboard-configmap.yaml
-- kubeflow-pipelines-profile-controller-patch.yaml
-- rewire-images-in-katib-config.yaml
-- rewire-inference-cm.yaml
-- set_memory.yaml
-- tensorboard-rbac-patch.yaml 
-- training-operator-deployment-patch.yaml
-- workflow-controller-configmap-patch.yaml
-- workflow-controller-deployment-patch.yaml
+patches:
+- path: centraldashboard-configmap.yaml
+- path: increase-tensorboard-controller-memory.yaml
+- path: kubeflow-pipelines-profile-controller-patch.yaml
+- path: rewire-images-in-katib-config.yaml
+- path: rewire-inference-cm.yaml
+- path: tensorboard-rbac-patch.yaml
+- path: training-operator-deployment-patch.yaml
+- path: workflow-controller-configmap-patch.yaml
+- path: workflow-controller-deployment-patch.yaml
 
 images:
 - name: gcr.io/ml-pipeline/api-server

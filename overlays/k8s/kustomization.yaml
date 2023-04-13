@@ -41,9 +41,9 @@ vars:
 configurations:
 - global-params.yaml
 
-patchesStrategicMerge:
-- rewire-istio-images.yaml
-- kf-istio-resources.yaml
+patches:
+- path: rewire-istio-images.yaml
+- path: kf-istio-resources.yaml
 
 images:
 - name: docker.io/istio/proxyv2
