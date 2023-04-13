@@ -1,5 +1,0 @@
-varReference:
-- path: redirectURIs
-  kind: OAuthClient
-- path: spec/host
-  kind: Route

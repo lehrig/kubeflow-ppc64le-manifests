@@ -29,17 +29,18 @@ configMapGenerator:
   - name: global-parameters
     env: global-params.env
 
-vars:
-- name: externalIpAddress
-  objref:
-    kind: ConfigMap
+replacements:
+- source:
     name: global-parameters
-    apiVersion: v1
-  fieldref:
-    fieldpath: data.externalIpAddress
-
-configurations:
-- global-params.yaml
+    kind: ConfigMap
+    version: v1
+    fieldPath: data.externalIpAddress
+  targets:
+  - select:
+      kind: Certificate
+      name: kubeflow-ingressgateway-certs
+    fieldPaths:
+    - spec.ipAddresses.0
 
 patches:
 - path: rewire-istio-images.yaml

@@ -23,18 +23,32 @@ secretGenerator:
   type: Opaque
 
 configMapGenerator:
-  - name: global-parameters
-    env: global-params.env
+- name: global-parameters
+  env: global-params.env
 
-vars:
-- name: clusterDomain
-  objref:
+replacements:
+- source:
     kind: ConfigMap
     name: global-parameters
-    apiVersion: v1
-  fieldref:
-    fieldpath: data.clusterDomain
+    version: v1
+    fieldPath: data.clusterDomain
+  targets:
+  - select:
+      kind: OAuthClient
+      name: kubeflow-istio
+    fieldPaths:
+      - redirectURIs.0
+    options:
+      delimiter: '.'
+      index: 1
+  - select:
+      kind: Route
+      name: secure-kubeflow
+    fieldPaths:
+      - spec.host
+    options:
+      delimiter: '.'
+      index: 1
 
 configurations:
 - transformers.yaml
-- global-params.yaml

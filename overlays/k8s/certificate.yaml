@@ -10,4 +10,4 @@ spec:
     kind: ClusterIssuer
   commonName: istio-ingressgateway.istio-system.svc
   ipAddresses:
-    - $(externalIpAddress) 
+    - EXTERNAL_IP_ADDRESS_PLACEHOLDER 

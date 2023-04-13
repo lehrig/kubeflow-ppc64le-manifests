@@ -3,7 +3,7 @@ kind: Route
 metadata:
   name: secure-kubeflow
 spec:
-  host: kubeflow.$(clusterDomain)
+  host: kubeflow.CLUSTER_DOMAIN_PLACEHOLDER
   port:
     targetPort: 9443
   tls:
