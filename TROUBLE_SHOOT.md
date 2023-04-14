@@ -208,3 +208,21 @@ oc delete identity "Local Password:user@example.com"
 ```
 
 See: https://docs.openshift.com/container-platform/4.12/authentication/identity_providers/configuring-htpasswd-identity-provider.html#identity-provider-htpasswd-update-users_configuring-htpasswd-identity-provider
+
+## Incompatible Hardware Architecture
+
+### Symptoms
+
+- Getting a ```CrashLoopBackOff```, no logs, and an ```Exit Code: 132``` (when ```oc describe pod XYZ```).
+- Getting an ```Error: signal: illegal instruction (core dumped)```
+
+### Diagnosis
+
+If you run the workload on an older architecture (e.g., Power8), try it with a newer (Power9, Power10).
+
+
+### Treatment
+
+- Remove old workers from your setup
+- Label your workloads so they are only scheduled on newer architectures
+- Down-port your workload
