@@ -88,7 +88,7 @@ data:
     }
   storageInitializer: |-
     {
-        "image" : "quay.io/ibm/storage-initializer:v0.10.0",
+        "image" : "quay.io/ibm/kserve-storage-initializer-ppc64le:v0.10.0",
         "memoryRequest": "100Mi",
         "memoryLimit": "1Gi",
         "cpuRequest": "100m",
