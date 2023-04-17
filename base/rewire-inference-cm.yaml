@@ -23,7 +23,7 @@ data:
        },
        "s3": {
            "s3AccessKeyIDName": "AWS_ACCESS_KEY_ID",
-           "s3SecretAccessKeyName": "AWS_SECRET_ACCESS_KEY"
+           "s3SecretAccessKeyName": "AWS_SECRET_ACCESS_KEY",
            "s3Endpoint": "",
            "s3UseHttps": "",
            "s3Region": "",
