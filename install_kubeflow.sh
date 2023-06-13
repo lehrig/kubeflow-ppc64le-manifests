@@ -708,7 +708,7 @@ EOF
         DATABASE_TOOLS=database_tools.tgz
 	wget https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu1804-ppc64le-100.6.1.tgz -O $DATABASE_TOOLS
 	kubectl -n $DATALAKE_NAMESPACE wait --for=condition=available --timeout=60s deploy/mongodb
-	MONGODB_POD=$(kubectl get po -n $DATALAKE_NAMESPACE -l name=$MONGODB_SERVICE -o jsonpath={..metadata.name})
+	MONGODB_POD=$(kubectl get po -n $DATALAKE_NAMESPACE -l name=$MONGODB_SERVICE -l app=$MONGODB_SERVICE -o jsonpath={..metadata.name})
 	sleep 30s
 	echo $MONGODB_POD
         kubectl cp -n $DATALAKE_NAMESPACE $DATABASE_TOOLS "$MONGODB_POD":/tmp/
