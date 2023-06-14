@@ -949,6 +949,15 @@ EOF
         rm -f trino-kafka-table.txt
         # sed -i "s/    dataDir: \/data\/trino/    dataDir: \/data\/trino\/data:z/g" $TRINO_CHARTS/trino/values.yaml
 
+        cat >> trino-node-properties.txt <<EOF
+  nodeSelector:
+    worker_type: baremetal_worker
+EOF
+
+        sed -i "/  nodeSelector: {}/r trino-node-properties.txt" $TRINO_CHARTS/trino/values.yaml
+	sed -i "/  nodeSelector: {}/d" $TRINO_CHARTS/trino/values.yaml
+        rm -f trino-node-properties.txt
+
 	helm upgrade --install -n trino trino $TRINO_CHARTS/trino
 	 case "$kubernetes_environment" in
         1 ) # OpenShift
