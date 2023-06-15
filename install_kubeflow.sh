@@ -958,6 +958,36 @@ EOF
 	# sed -i "/  nodeSelector: {}/d" $TRINO_CHARTS/trino/values.yaml
         # rm -f trino-node-properties.txt
 
+        # See https://stackoverflow.com/a/75757959 and uncomment the 27 lines below if Trino is deployed to multiple machines, e.g. when using the nodeSelector above
+	# cat >> trino-config-properties.txt <<EOF
+# additionalConfigProperties:
+  #   - node.internal-address-source=IP_ENCODED_AS_HOSTNAME
+# EOF
+        # sed -i "/additionalConfigProperties: {}/r trino-config-properties.txt" $TRINO_CHARTS/trino/values.yaml
+	# sed -i "/additionalConfigProperties: {}/d" $TRINO_CHARTS/trino/values.yaml
+        # rm -f trino-config-properties.txt
+
+ 	# cat <<EOF | kubectl -n trino apply -f -
+# apiVersion: v1
+# kind: Service
+# metadata:
+  # labels:
+    # app: trino
+  # name: ip
+  # namespace: trino
+# spec:
+  # clusterIP: None # this makes it headless.
+  # ports:
+    # - name: http
+      # port: 8080
+      # protocol: TCP
+      # targetPort: http
+  # selector:
+    # app: trino
+  # type: ClusterIP
+# EOF
+	
+
 	helm upgrade --install -n trino trino $TRINO_CHARTS/trino
 	 case "$kubernetes_environment" in
         1 ) # OpenShift
