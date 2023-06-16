@@ -952,6 +952,8 @@ EOF
         # cat >> trino-node-properties.txt <<EOF
   # nodeSelector:
     # worker_type: baremetal_worker
+    # or
+    # feature.node.kubernetes.io/cpu-cpuid.ARCH_3_00: true
 # EOF
 
         # sed -i "/  nodeSelector: {}/r trino-node-properties.txt" $TRINO_CHARTS/trino/values.yaml
