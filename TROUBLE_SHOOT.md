@@ -231,8 +231,9 @@ If you run the workload on an older architecture (e.g., Power8), try it with a n
 
 ### Symptoms
 
-- Getting a ```Unable to connect to the server: x509: certificate has expired or is not yet valid``` (see: https://cloud.google.com/anthos/clusters/docs/bare-metal/latest/troubleshooting/expired-certs)
 - Errors in: ```oc logs -n kubeflow admission-webhook-deployment```
+- Getting a ```Envoy proxy is NOT ready: config not received from Pilot (is Pilot running?)```
+- Getting a ```Unable to connect to the server: x509: certificate has expired or is not yet valid``` (see: https://cloud.google.com/anthos/clusters/docs/bare-metal/latest/troubleshooting/expired-certs)
 - Getting a ```multiple CertificateRequests were found for the``` (when ```oc logs cert-manager...```)
 
 ### Diagnosis
