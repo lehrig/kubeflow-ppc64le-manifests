@@ -226,3 +226,21 @@ If you run the workload on an older architecture (e.g., Power8), try it with a n
 - Remove old workers from your setup
 - Label your workloads so they are only scheduled on newer architectures
 - Down-port your workload
+
+## Certificate issues 
+
+### Symptoms
+
+- Getting a ```Unable to connect to the server: x509: certificate has expired or is not yet valid``` (see: https://cloud.google.com/anthos/clusters/docs/bare-metal/latest/troubleshooting/expired-certs)
+- Errors in: ```oc logs -n kubeflow admission-webhook-deployment```
+- Getting a ```multiple CertificateRequests were found for the``` (when ```oc logs cert-manager...```)
+
+### Diagnosis
+
+- Certificates may be expired. Check certificate expiration times: ```echo -e "NAMESPACE\tNAME\tEXPIRY" && oc get secrets -A -o go-template='{{range .items}}{{if eq .type "kubernetes.io/tls"}}{{.metadata.namespace}}{{" "}}{{.metadata.name}}{{" "}}{{index .data "tls.crt"}}{{"\n"}}{{end}}{{end}}' | while read namespace name cert; do echo -en "$namespace\t$name\t"; echo $cert | base64 -d | openssl x509 -noout -enddate; done | column -t``` (see: https://access.redhat.com/solutions/3930291; for vanilla k8s use ```kubeadm certs check-expiration```; see: https://cloud.google.com/anthos/clusters/docs/bare-metal/latest/troubleshooting/expired-certs)
+- Too many certificate requests may be created. Check number of certificate requests: ```get certificaterequest -A```
+
+
+### Treatment
+
+- Remove certificaterequests: ```oc get certificaterequest | awk '{print $1}' | xargs oc delete certificaterequest``` (see: https://www.ibm.com/mysupport/s/defect/aCI3p000000XkwVGAS/dt173371)
