@@ -1029,8 +1029,7 @@ htpasswd -Bb $KUBEFLOW_BASE_DIR/ocp_users.htpasswd user@example.com 12341234
 oc create secret generic htpass-secret \
   --from-file=htpasswd=$KUBEFLOW_BASE_DIR/ocp_users.htpasswd \
   -n openshift-config
-oc patch oauth cluster --type=merge -p '{"spec":{"identityProviders": [{"htpasswd": {"fileData": {"name": "htpass-secret"}}, "mappingMethod": "claim", "name": "Local Password","type":"HTPasswd"}]}}' --dry-run=client -o yaml
-
+oc patch oauth cluster --type=merge -p '{"spec":{"identityProviders": [{"htpasswd": {"fileData": {"name": "htpass-secret"}}, "mappingMethod": "claim", "name": "Local Password","type":"HTPasswd"}]}}'
 
 # Get UI address
 # TODO: Get rid of insecure routes
