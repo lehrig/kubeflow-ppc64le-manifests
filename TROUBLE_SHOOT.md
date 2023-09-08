@@ -240,8 +240,15 @@ If you run the workload on an older architecture (e.g., Power8), try it with a n
 
 - Certificates may be expired. Check certificate expiration times: ```echo -e "NAMESPACE\tNAME\tEXPIRY" && oc get secrets -A -o go-template='{{range .items}}{{if eq .type "kubernetes.io/tls"}}{{.metadata.namespace}}{{" "}}{{.metadata.name}}{{" "}}{{index .data "tls.crt"}}{{"\n"}}{{end}}{{end}}' | while read namespace name cert; do echo -en "$namespace\t$name\t"; echo $cert | base64 -d | openssl x509 -noout -enddate; done | column -t``` (see: https://access.redhat.com/solutions/3930291; for vanilla k8s use ```kubeadm certs check-expiration```; see: https://cloud.google.com/anthos/clusters/docs/bare-metal/latest/troubleshooting/expired-certs)
 - Too many certificate requests may be created. Check number of certificate requests: ```get certificaterequest -A```
+- cert-manager might have this issue: https://github.com/istio/istio/issues/32825#issuecomment-840099607
 
 
 ### Treatment
 
 - Remove certificaterequests: ```oc get certificaterequest | awk '{print $1}' | xargs oc delete certificaterequest``` (see: https://www.ibm.com/mysupport/s/defect/aCI3p000000XkwVGAS/dt173371)
+- Add the following to the ```env``` property via ```oc edit deploy istiod-kubeflow -n istio-system```:
+
+```
+- name: ENABLE_LEGACY_FSGROUP_INJECTION
+  value: "true"
+```
