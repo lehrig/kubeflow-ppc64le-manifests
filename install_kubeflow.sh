@@ -171,12 +171,12 @@ esac
 if ! command -v kustomize &> /dev/null
 then
     echo "Kustomize not found - installing to /user/local/bin/..."
-    kustomize_version=5.0.0
-    curl --silent --location --remote-name "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv$kustomize_version/kustomize_v$kustomize_version_linux_ppc64le.tar.gz"
-    tar -xzvf kustomize_v$kustomize_version_linux_ppc64le.tar.gz
+    kustomize_version=5.1.1
+    curl --silent --location --remote-name "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${kustomize_version}/kustomize_v${kustomize_version}_linux_ppc64le.tar.gz"
+    tar -xzvf kustomize_v${kustomize_version}_linux_ppc64le.tar.gz
     chmod a+x kustomize
     sudo mv kustomize /usr/local/bin/kustomize
-    rm -f kustomize_v$kustomize_version_linux_ppc64le.tar.gz
+    rm -f kustomize_v${kustomize_version}_linux_ppc64le.tar.gz
 fi
 
 # get helm if not there
@@ -184,11 +184,11 @@ if ! command -v helm &> /dev/null
 then
    echo "Helm not found - installing to /user/local/bin/..."
    helm_version=3.11.2
-   curl --silent --location --remote-name "https://get.helm.sh/helm-v$helm_version-linux-ppc64le.tar.gz"
-   tar --strip-components=1 -xzf helm-v$helm_version-linux-ppc64le.tar.gz ./linux-ppc64le/helm
+   curl --silent --location --remote-name "https://get.helm.sh/helm-v${helm_version}-linux-ppc64le.tar.gz"
+   tar --strip-components=1 -xzf helm-v${helm_version}-linux-ppc64le.tar.gz ./linux-ppc64le/helm
    chmod a+x helm
    sudo mv helm /usr/local/bin/helm
-   rm -f helm-v$helm_version-linux-ppc64le.tar.gz
+   rm -f helm-v${helm_version}-linux-ppc64le.tar.gz
 fi
 
 case "$store_credentials" in 
