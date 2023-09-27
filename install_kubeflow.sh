@@ -286,11 +286,11 @@ case "$install_operators" in
   * ) ;;
 esac
 # Configure service mesh
-while ! kustomize build $KUBEFLOW_KUSTOMIZE/servicemesh | envsubst | awk '!/well-defined/' | oc apply -f -; do echo -e "Retrying to apply resources for Service Mesh..."; sleep 10; done
+while ! kustomize build $KUBEFLOW_KUSTOMIZE/servicemesh | envsubst '${CLUSTER_DOMAIN}' | awk '!/well-defined/' | oc apply -f -; do echo -e "Retrying to apply resources for Service Mesh..."; sleep 10; done
 oc wait --for=condition=available --timeout=600s deployment/istiod-kubeflow -n istio-system
 
 # Deploy Kubeflow
-while ! kustomize build $KUBEFLOW_KUSTOMIZE | envsubst | awk '!/well-defined/' | oc apply -f -; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
+while ! kustomize build $KUBEFLOW_KUSTOMIZE | awk '!/well-defined/' | oc apply -f -; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
 
 oc wait --for=condition=available --timeout=600s deployment/centraldashboard -n kubeflow
 
@@ -306,7 +306,7 @@ echo -e "# Initializing Kubeflow Installation; please wait... #"
 echo -e "######################################################"
 echo -e ""
 
-while ! kustomize build $KUBEFLOW_KUSTOMIZE | envsubst | awk '!/well-defined/' | kubectl apply -f -; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
+while ! kustomize build $KUBEFLOW_KUSTOMIZE | envsubst '${EXTERNAL_IP_ADDRESS}' | awk '!/well-defined/' | kubectl apply -f -; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
 
 # Ensure istio is up and side-cars are injected into kubeflow namespace afterwards (by restarting pods)
 kubectl wait --for=condition=available --timeout=600s deployment/istiod -n istio-system
