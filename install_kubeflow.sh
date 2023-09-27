@@ -281,7 +281,7 @@ case "$install_operators" in
 
         # Configure Grafana
         # Note: Prometheus comes with OpenShift out-of-the-box
-	oc apply overlays/openshift/grafana/enable-user-workload.yaml
+	oc apply -f overlays/openshift/grafana/enable-user-workload.yaml
         ;;
   * ) ;;
 esac
