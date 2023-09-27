@@ -103,25 +103,25 @@ images:
   newName: quay.io/ibm/kubeflow-api-server-ppc64le
   newTag: 2.0.0-alpha.7
 - name: gcr.io/ml-pipeline/persistenceagent
-  newName: quay.io/ibm/kubeflow-persistenceagent-ppc64le
+  newName: quay.io/rocketaihub/kubeflow-persistenceagent-ppc64le
   newTag: 2.0.0-alpha.7
 - name: gcr.io/ml-pipeline/scheduledworkflow
-  newName: quay.io/ibm/kubeflow-scheduledworkflow-ppc64le
+  newName: quay.io/rocketaihub/kubeflow-scheduledworkflow-ppc64le
   newTag: 2.0.0-alpha.7
 - name: gcr.io/ml-pipeline/frontend
-  newName: quay.io/ibm/kubeflow-frontend-ppc64le
+  newName: quay.io/rocketaihub/kubeflow-frontend-ppc64le
   newTag: 2.0.0-alpha.7
 - name: gcr.io/ml-pipeline/viewer-crd-controller
-  newName: quay.io/ibm/kubeflow-viewer-crd-controller-ppc64le
+  newName: quay.io/rocketaihub/kubeflow-viewer-crd-controller-ppc64le
   newTag: 2.0.0-alpha.7
 - name: gcr.io/ml-pipeline/visualization-server
-  newName: quay.io/ibm/kubeflow-visualization-server-ppc64le
+  newName: quay.io/rocketaihub/kubeflow-visualization-server-ppc64le
   newTag: 2.0.0-alpha.7
 - name: gcr.io/ml-pipeline/metadata-writer
   newName: quay.io/ibm/kubeflow-metadata-writer-ppc64le
   newTag: 2.0.0-alpha.7
 - name: gcr.io/ml-pipeline/cache-server
-  newName: quay.io/ibm/kubeflow-cache-server-ppc64le
+  newName: quay.io/rocketaihub/kubeflow-cache-server-ppc64le
   newTag: 2.0.0-alpha.7
 - name: gcr.io/ml-pipeline/minio
   newName: quay.io/ibm/kubeflow-minio-ppc64le
@@ -151,52 +151,52 @@ images:
   newName: quay.io/ibm/kubeflow-application-crd-controller-ppc64le
   newTag: 1.0-beta-non-cluster-role
 - name: docker.io/kubeflowkatib/katib-controller
-  newName: quay.io/ibm/katib-controller-ppc64le
+  newName: quay.io/rocketaihub/katib-controller-ppc64le
   newTag: v0.15.0
 - name: docker.io/kubeflowkatib/katib-db-manager
-  newName: quay.io/ibm/katib-db-manager-ppc64le
+  newName: quay.io/rocketaihub/katib-db-manager-ppc64le
   newTag: v0.15.0
 - name: docker.io/kubeflowkatib/katib-ui
-  newName: quay.io/ibm/katib-ui-ppc64le
+  newName: quay.io/rocketaihub/katib-ui-ppc64le
   newTag: v0.15.0
 - name: mysql
   newName: quay.io/ibm/kubeflow-mariadb-ppc64le
   newTag: 10.2.19
 - name: docker.io/kubeflownotebookswg/centraldashboard
-  newName: quay.io/ibm/kubeflow-central-dashboard-ppc64le
+  newName: quay.io/rocketaihub/kubeflow-central-dashboard-ppc64le
   newTag: v1.7.0
 - name: docker.io/kubeflownotebookswg/poddefaults-webhook
   newName: quay.io/ibm/kubeflow-admission-webhook-ppc64le
   newTag: v1.7.0
 - name: docker.io/kubeflownotebookswg/jupyter-web-app
-  newName: quay.io/ibm/kubeflow-jupyter-web-app-ppc64le
+  newName: quay.io/rocketaihub/kubeflow-jupyter-web-app-ppc64le
   newTag: v1.7.0
 - name: docker.io/kubeflownotebookswg/notebook-controller
-  newName: quay.io/ibm/kubeflow-notebook-controller-ppc64le
+  newName: quay.io/rocketaihub/kubeflow-notebook-controller-ppc64le
   newTag: v1.7.0
 - name: docker.io/kubeflownotebookswg/kfam
-  newName: quay.io/ibm/kubeflow-access-management-ppc64le
+  newName: quay.io/rocketaihub/kubeflow-access-management-ppc64le
   newTag: v1.7.0
 - name: docker.io/kubeflownotebookswg/profile-controller
-  newName: quay.io/ibm/kubeflow-profile-controller-ppc64le
+  newName: quay.io/rocketaihub/kubeflow-profile-controller-ppc64le
   newTag: v1.7.0
 - name: docker.io/kubeflownotebookswg/volumes-web-app
-  newName: quay.io/ibm/kubeflow-volumes-web-app-ppc64le
+  newName: quay.io/rocketaihub/kubeflow-volumes-web-app-ppc64le
   newTag: v1.7.0
 - name: docker.io/kubeflownotebookswg/tensorboard-controller
-  newName: quay.io/ibm/kubeflow-tensorboard-controller-ppc64le
+  newName: quay.io/rocketaihub/kubeflow-tensorboard-controller-ppc64le
   newTag: v1.7.0
 - name: docker.io/kubeflownotebookswg/tensorboards-web-app
-  newName: quay.io/ibm/kubeflow-tensorboards-web-app-ppc64le
+  newName: quay.io/rocketaihub/kubeflow-tensorboards-web-app-ppc64le
   newTag: v1.7.0
 - name: kubeflow/training-operator
   newName: quay.io/ibm/kubeflow-training-operator-ppc64le
   newTag: 5a5f92d
 - name: kserve/kserve-controller
-  newName: quay.io/ibm/kserve-controller-ppc64le
+  newName: quay.io/rocketaihub/kserve-controller-ppc64le
   newTag: v0.10.0
 - name: kserve/models-web-app
-  newName: quay.io/ibm/kserve-models-web-app-ppc64le
+  newName: quay.io/rocketaihub/kserve-models-web-app-ppc64le
   newTag: v0.10.0
 - name: kserve/lgbserver
   newName: quay.io/mgiessing/lgbserver
@@ -225,4 +225,3 @@ images:
 - name: kserve/xgbserver
   newName: quay.io/mgiessing/xgbserver
   newTag: v0.10.0
-
