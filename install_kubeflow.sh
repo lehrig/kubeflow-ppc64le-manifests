@@ -171,12 +171,12 @@ esac
 if ! command -v kustomize &> /dev/null
 then
     echo "Kustomize not found - installing to /user/local/bin/..."
-    kustomize_version=5.0.0
-    curl --silent --location --remote-name "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv$kustomize_version/kustomize_v$kustomize_version_linux_ppc64le.tar.gz"
-    tar -xzvf kustomize_v$kustomize_version_linux_ppc64le.tar.gz
+    kustomize_version=5.1.1
+    curl --silent --location --remote-name "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${kustomize_version}/kustomize_v${kustomize_version}_linux_ppc64le.tar.gz"
+    tar -xzvf kustomize_v${kustomize_version}_linux_ppc64le.tar.gz
     chmod a+x kustomize
     sudo mv kustomize /usr/local/bin/kustomize
-    rm -f kustomize_v$kustomize_version_linux_ppc64le.tar.gz
+    rm -f kustomize_v${kustomize_version}_linux_ppc64le.tar.gz
 fi
 
 # get helm if not there
@@ -184,11 +184,11 @@ if ! command -v helm &> /dev/null
 then
    echo "Helm not found - installing to /user/local/bin/..."
    helm_version=3.11.2
-   curl --silent --location --remote-name "https://get.helm.sh/helm-v$helm_version-linux-ppc64le.tar.gz"
-   tar --strip-components=1 -xzf helm-v$helm_version-linux-ppc64le.tar.gz ./linux-ppc64le/helm
+   curl --silent --location --remote-name "https://get.helm.sh/helm-v${helm_version}-linux-ppc64le.tar.gz"
+   tar --strip-components=1 -xzf helm-v${helm_version}-linux-ppc64le.tar.gz ./linux-ppc64le/helm
    chmod a+x helm
    sudo mv helm /usr/local/bin/helm
-   rm -f helm-v$helm_version-linux-ppc64le.tar.gz
+   rm -f helm-v${helm_version}-linux-ppc64le.tar.gz
 fi
 
 case "$store_credentials" in 
@@ -281,16 +281,16 @@ case "$install_operators" in
 
         # Configure Grafana
         # Note: Prometheus comes with OpenShift out-of-the-box
-	oc apply overlays/openshift/grafana/enable-user-workload.yaml
+	oc apply -f $KUBEFLOW_KUSTOMIZE/grafana/enable-user-workload.yaml
         ;;
   * ) ;;
 esac
 # Configure service mesh
-while ! kustomize build $KUBEFLOW_KUSTOMIZE/servicemesh | envsubst | awk '!/well-defined/' | oc apply -f -; do echo -e "Retrying to apply resources for Service Mesh..."; sleep 10; done
+while ! kustomize build $KUBEFLOW_KUSTOMIZE/servicemesh | envsubst '${CLUSTER_DOMAIN}' | awk '!/well-defined/' | oc apply -f -; do echo -e "Retrying to apply resources for Service Mesh..."; sleep 10; done
 oc wait --for=condition=available --timeout=600s deployment/istiod-kubeflow -n istio-system
 
 # Deploy Kubeflow
-while ! kustomize build $KUBEFLOW_KUSTOMIZE | envsubst | awk '!/well-defined/' | oc apply -f -; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
+while ! kustomize build $KUBEFLOW_KUSTOMIZE | awk '!/well-defined/' | oc apply -f -; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
 
 oc wait --for=condition=available --timeout=600s deployment/centraldashboard -n kubeflow
 
@@ -306,7 +306,7 @@ echo -e "# Initializing Kubeflow Installation; please wait... #"
 echo -e "######################################################"
 echo -e ""
 
-while ! kustomize build $KUBEFLOW_KUSTOMIZE | envsubst | awk '!/well-defined/' | kubectl apply -f -; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
+while ! kustomize build $KUBEFLOW_KUSTOMIZE | envsubst '${EXTERNAL_IP_ADDRESS}' | awk '!/well-defined/' | kubectl apply -f -; do echo -e "Retrying to apply resources for Kubeflow..."; sleep 10; done
 
 # Ensure istio is up and side-cars are injected into kubeflow namespace afterwards (by restarting pods)
 kubectl wait --for=condition=available --timeout=600s deployment/istiod -n istio-system
