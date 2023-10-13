@@ -15,13 +15,7 @@ spec:
         owner:
           kind: User
           name: {{ .Name }}
-        resourceQuotaSpec:
-          hard:
-            cpu: "20"
-            memory: 64Gi
-            "requests.nvidia.com/gpu": "2"
-            persistentvolumeclaims: "100"
-            requests.storage: "500Gi"
+        resourceQuotaSpec: {}
   - objectTemplate: | 
       apiVersion: rbac.authorization.k8s.io/v1
       kind: RoleBinding

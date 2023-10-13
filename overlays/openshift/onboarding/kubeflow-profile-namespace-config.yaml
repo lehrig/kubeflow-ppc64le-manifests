@@ -242,3 +242,25 @@ spec:
               secretKeyRef:
                 name: mlpipeline-minio-artifact
                 key: secretkey
+  - objectTemplate: |
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: minio
+        namespace: {{ .Name }}
+        annotations:
+          serving.kserve.io/s3-endpoint: "minio-service.kubeflow:9000" # replace with your s3 endpoint e.g minio-service.kubeflow:9000
+          serving.kserve.io/s3-usehttps: "0" # by default 1, if testing with minio you can set to 0
+          serving.kserve.io/s3-region: "us-west-1"
+          serving.kserve.io/s3-useanoncredential: "false" # omitting this is the same as false, if true will ignore provided credential and use anonymous credentials
+      stringData:
+        AWS_ACCESS_KEY_ID: minio
+        AWS_SECRET_ACCESS_KEY: minio123
+  - objectTemplate: |
+      apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: kserve-inference-sa
+        namespace: {{ .Name }}
+      secrets:
+      - name: minio
