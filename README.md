@@ -3,12 +3,13 @@ A repository for Kustomize manifests for Kubeflow on IBM Power (ppc64le).
 These manifests base on the [official Kubeflow manifests](http://www.github.com/kubeflow/manifests/).
 
 ## Supported Distributions
-- Red Hat OpenShift v4.5-v4.12 on ppc64le
-- Vanilla Kubernetes v1.17-v1.25 on ppc64le
+- Red Hat OpenShift v4.5-v4.13 on ppc64le
+- Vanilla Kubernetes v1.17-v1.26 on ppc64le
 
 ## Supported Kubeflow Versions
 Please select appropriate tag:
-- v1.7.0 (main)
+- v1.8.0 (main)
+- v1.7.0
 - v1.6.0
 - v1.5.0
 - v1.4.1
@@ -49,14 +50,14 @@ See: https://docs.nginx.com/nginx-service-mesh/get-started/kubernetes-platform/k
 
 ## Install
 ```
-# select [main|v1.7.0|v1.6.0|v1.5.0|v1.4.1|v1.3.0]
+# select [main|v1.8.0|v1.7.0|v1.6.0|v1.5.0|v1.4.1|v1.3.0]
 KUBEFLOW_VERSION=main
 wget https://raw.githubusercontent.com/lehrig/kubeflow-ppc64le-manifests/${KUBEFLOW_VERSION}/install_kubeflow.sh
 source install_kubeflow.sh
 ```
 ## Uninstall
 ```
-# select [main|v1.7.0|v1.6.0|v1.5.0|v1.4.1|v1.3.0]
+# select [main|v1.8.0|v1.7.0|v1.6.0|v1.5.0|v1.4.1|v1.3.0]
 KUBEFLOW_VERSION=main
 wget https://raw.githubusercontent.com/lehrig/kubeflow-ppc64le-manifests/${KUBEFLOW_VERSION}/uninstall_kubeflow.sh
 source uninstall_kubeflow.sh
