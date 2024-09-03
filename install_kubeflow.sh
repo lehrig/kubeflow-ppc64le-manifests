@@ -193,7 +193,7 @@ then
    echo "Helm not found - installing to /user/local/bin/..."
    helm_version=3.11.2
    curl --silent --location --remote-name "https://get.helm.sh/helm-v${helm_version}-linux-ppc64le.tar.gz"
-   tar --strip-components=1 -xzf helm-v${helm_version}-linux-ppc64le.tar.gz ./linux-ppc64le/helm
+   tar --strip-components=1 -xzf helm-v${helm_version}-linux-ppc64le.tar.gz linux-ppc64le/helm
    chmod a+x helm
    sudo mv helm /usr/local/bin/helm
    rm -f helm-v${helm_version}-linux-ppc64le.tar.gz
