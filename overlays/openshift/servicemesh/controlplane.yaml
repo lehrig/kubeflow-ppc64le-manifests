@@ -3,7 +3,7 @@ kind: ServiceMeshControlPlane
 metadata:
   name: kubeflow
 spec:
-  version: v2.1
+  version: v2.6
   proxy:
     injection:
       autoInject: true
