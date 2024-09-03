@@ -51,6 +51,14 @@ case "$kubernetes_environment" in
         fi 
       fi
       
+      oc whoami &> /dev/null
+
+      if [[ $? -ne 0 ]]
+      then
+        echo "You did not log into the OpenShift api server, please login and re-run the script."
+        return
+      fi
+
       clusterDomain=$(oc get ingresses.config/cluster -o jsonpath={.spec.domain})
       echo -e ""
       read -p "${BOLD}Install OpenShift operators (Cert-Manager, Service Mesh (incl. Elasticsearch, Kiali, Jaeger), Namespace-Configuration, Serverless, Node Feature Discovery, GPU Operator, Grafana)?${NORMAL} [y]: " install_operators
