@@ -252,3 +252,42 @@ If you run the workload on an older architecture (e.g., Power8), try it with a n
 - name: ENABLE_LEGACY_FSGROUP_INJECTION
   value: "true"
 ```
+
+## Old certificates 
+
+### Symptoms
+
+- ```oc login``` results in ```Unable to connect to the server: EOF```
+
+### Diagnosis
+
+- Certificate is either expired or corrupt.
+- Check the pending CSR: ```oc get CSR -A```
+- Check the ETCD pods health: ```oc get pods -n openshift-etcd```
+
+- See: https://access.redhat.com/solutions/6976636
+
+### Treatment
+
+- Login via installation kubeconfig file:
+
+```
+export KUBECONFIG=/root/ocp4/auth/kubeconfig
+oc get nodes
+```
+
+- Clean up all CSRs: ```oc delete csr --all```
+- Delete the bad certificate: ```oc delete secret -n openshift-config-managed kube-controller-manager-client-cert-key```
+- Approve the CSRs as they come in and verify that they are now "Approved,Issued":
+
+```
+oc get csr -o name | xargs oc adm certificate approve 
+oc get csr -A
+```
+
+- If etcd and kube-scheduler is broken patch them:
+
+```
+oc patch etcd cluster -p='{"spec": {"forceRedeploymentReason": "recovery-'"$( date --rfc-3339=ns )"'"}}' --type=merge
+oc patch kubescheduler cluster -p='{"spec": {"forceRedeploymentReason": "recovery-'"$( date --rfc-3339=ns )"'"}}' --type=merge
+```
