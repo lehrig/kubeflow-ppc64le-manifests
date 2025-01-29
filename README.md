@@ -1,5 +1,10 @@
-# Kustomize Manifests for Kubeflow on ppc64le
-A repository for Kustomize manifests for Kubeflow on IBM Power (ppc64le).
+# Kustomize Manifests for Rocket AI Hub (Kubeflow on ppc64le)
+A repository for Kustomize manifests for Kubeflow on IBM Power Platform (ppc64le).
+
+Rocket AI Hub is an MLOps Platform Optimized for IBM Power platform.
+It is an enterprise support Offering for Open-Source project located at https://www.kubeflow.org/.
+It is Machine Learning Toolkit tailored and optimized for Red Hat OpenShift on IBM Power. For more details check out https://rocketsoftware.github.io/rocketaihub/
+
 These manifests base on the [official Kubeflow manifests](http://www.github.com/kubeflow/manifests/).
 
 ## Supported Distributions
