@@ -135,6 +135,7 @@ images:
   newTag: v1.8.0
 - name: gcr.io/ml-pipeline/cache-server
   newName: quay.io/rocketaihub/kubeflow-cache-server-ppc64le
+  newTag: 2.0.0-alpha.7
   newTag: v1.8.0
 - name: gcr.io/ml-pipeline/minio
   newName: quay.io/ibm/kubeflow-minio-ppc64le
@@ -241,4 +242,3 @@ images:
 - name: kserve/xgbserver
   newName: quay.io/mgiessing/xgbserver
   newTag: v0.10.0
-
