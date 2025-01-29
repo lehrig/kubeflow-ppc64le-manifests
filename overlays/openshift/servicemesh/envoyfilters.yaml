@@ -34,13 +34,13 @@ spec:
         listener:
           filterChain:
             filter:
-              name: envoy.http_connection_manager
+              name: envoy.filters.network.http_connection_manager
       patch:
         operation: MERGE
         value:
           typed_config:
             '@type': >-
-              type.googleapis.com/envoy.config.filter.network.http_connection_manager.v2.HttpConnectionManager
+              type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
             tracing:
               custom_tags:
                 - request_header:
@@ -59,13 +59,13 @@ spec:
         listener:
           filterChain:
             filter:
-              name: envoy.http_connection_manager
+              name: envoy.filters.network.http_connection_manager
       patch:
         operation: MERGE
         value:
           typed_config:
             '@type': >-
-              type.googleapis.com/envoy.config.filter.network.http_connection_manager.v2.HttpConnectionManager
+              type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
             tracing:
               custom_tags:
                 - request_header:

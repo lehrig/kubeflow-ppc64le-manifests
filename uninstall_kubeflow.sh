@@ -88,6 +88,8 @@ case "$kubernetes_environment" in
 oc delete --all -A inferenceservices.serving.kserve.io 
 oc delete --kustomize $KUBEFLOW_KUSTOMIZE
 oc delete --kustomize $KUBEFLOW_KUSTOMIZE/servicemesh
+# uninstall gpu operator and remote the associated resources
+helm list --no-headers=true -n gpu-operator | awk '{print $1}' | xargs helm uninstall -n gpu-operator
 #############################################
 ;;
 2 ) # k8s
