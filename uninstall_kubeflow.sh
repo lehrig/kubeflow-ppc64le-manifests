@@ -86,6 +86,7 @@ echo -e "Initializing uninstall..."
 case "$kubernetes_environment" in
 1 ) # OpenShift
 oc delete --all -A inferenceservices.serving.kserve.io 
+oc delete validatingwebhookconfiguration validation.webhook.serving.knative.dev
 oc delete --kustomize $KUBEFLOW_KUSTOMIZE
 oc delete --kustomize $KUBEFLOW_KUSTOMIZE/servicemesh
 # uninstall gpu operator and remote the associated resources
